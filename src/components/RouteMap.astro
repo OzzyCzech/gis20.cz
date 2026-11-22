@@ -1,0 +1,196 @@
+---
+import { drunkRoute } from '../data/drunkRoute';
+import { distanceKm, event, type LatLon } from '../data/event';
+
+// Equidistant cylindrical projection with the standard parallel in the middle
+// of the extent: true scale along meridians and along that parallel.
+const bounds = { west: 16.5, east: 18.75, south: 48.55, north: 50.1 };
+const phi0 = (bounds.south + bounds.north) / 2;
+const cosPhi0 = Math.cos((phi0 * Math.PI) / 180);
+
+const width = 600;
+const pxPerDegLat = width / ((bounds.east - bounds.west) * cosPhi0);
+const height = Math.round((bounds.north - bounds.south) * pxPerDegLat);
+
+const project = ({ lat, lon }: LatLon) => ({
+	x: (lon - bounds.west) * cosPhi0 * pxPerDegLat,
+	y: (bounds.north - lat) * pxPerDegLat,
+});
+
+const school = project(event.schoolCoords);
+const town = project(event.townCoords);
+const km = Math.round(distanceKm(event.schoolCoords, event.townCoords));
+const mid = { x: (school.x + town.x) / 2, y: (school.y + town.y) / 2 };
+const rawAngle = (Math.atan2(town.y - school.y, town.x - school.x) * 180) / Math.PI;
+// Keep the distance label upright regardless of line direction.
+const angle = rawAngle > 90 ? rawAngle - 180 : rawAngle < -90 ? rawAngle + 180 : rawAngle;
+
+// The way back, as drawn by hand by the organiser (see drunkRoute.ts).
+const drunkPoints = drunkRoute.map(([x, y]) => `${x},${y}`).join(' ');
+const drunkLen = drunkRoute.slice(1).reduce((sum, [x, y], i) => sum + Math.hypot(x - drunkRoute[i][0], y - drunkRoute[i][1]), 0);
+// Same km-per-pixel ratio as the straight route, so both labels agree.
+const drunkKm = Math.round((drunkLen / Math.hypot(school.x - town.x, school.y - town.y)) * distanceKm(event.schoolCoords, event.townCoords));
+// Label spots picked at the route's turning points.
+const backLabel = drunkRoute[128];
+const lost = drunkRoute[77];
+
+// Optional VŠB logo next to the campus marker: drop src/assets/logo-vsb.{svg,png,webp} into the project.
+const logoFiles = import.meta.glob<string>('../assets/logo-vsb.{svg,png,jpg,webp}', { eager: true, query: '?url', import: 'default' });
+const logoUrl = Object.values(logoFiles)[0];
+const logoBox = { x: school.x - 108, y: school.y - 36, size: 66 };
+const cemetery = drunkRoute[193];
+
+// Direction arrows: "tam" points from Ostrava to the cellar, "zpět" back along the
+// hand-drawn route (stored from VŠB to the cellar, so travel runs to lower indices).
+const deg2 = (dx: number, dy: number) => (Math.atan2(dy, dx) * 180) / Math.PI;
+const thereT = 0.27;
+const thereArrow = {
+	x: school.x + (town.x - school.x) * thereT,
+	y: school.y + (town.y - school.y) * thereT,
+	a: deg2(town.x - school.x, town.y - school.y),
+};
+const backArrows = [232, 160, 100, 30].map((i) => ({
+	x: drunkRoute[i][0],
+	y: drunkRoute[i][1],
+	a: deg2(drunkRoute[i - 3][0] - drunkRoute[i + 3][0], drunkRoute[i - 3][1] - drunkRoute[i + 3][1]),
+}));
+const arrowHead = 'M8 0L-6 -6.5L-2.5 0L-6 6.5Z';
+
+const parallels = [49, 49.5, 50];
+const meridians = [17, 17.5, 18, 18.5];
+// Geo numbers use a decimal point, matching the coordinates elsewhere on the page.
+const deg = (v: number) => `${v}°`;
+
+// 50 km scale bar, measured along a meridian (true scale in this projection).
+const kmPerDegLat = 111.2;
+const scaleKm = 50;
+const scalePx = (scaleKm / kmPerDegLat) * pxPerDegLat;
+const phiLabel = String(Math.round(phi0 * 1000) / 1000);
+---
+
+<figure class="relative">
+	<svg
+		viewBox={`0 0 ${width} ${height}`}
+		class="h-auto w-full"
+		role="img"
+		aria-label={`Mapa: z VŠB-TUO v Ostravě-Porubě do Dolních Bojanovic je to vzdušnou čarou asi ${km} km. Cesta zpět je nakreslená jako klikatá opilecká trasa dlouhá asi ${drunkKm} km.`}
+	>
+		<defs>
+			<pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+				<line x1="0" y1="0" x2="0" y2="8" stroke="currentColor" stroke-width="1" opacity="0.06"></line>
+			</pattern>
+		</defs>
+		<rect width={width} height={height} fill="url(#hatch)" class="text-ink"></rect>
+
+		<g class="text-ink-soft" stroke="currentColor" stroke-width="1" stroke-dasharray="2 5" opacity="0.55">
+			{parallels.map((lat) => <line x1="0" x2={width} y1={project({ lat, lon: 0 }).y} y2={project({ lat, lon: 0 }).y} />)}
+			{meridians.map((lon) => <line y1="0" y2={height} x1={project({ lat: 0, lon }).x} x2={project({ lat: 0, lon }).x} />)}
+		</g>
+		<g class="fill-ink-soft font-mono" font-size="12">
+			{parallels.map((lat) => <text x="8" y={project({ lat, lon: 0 }).y - 6}>{deg(lat)} N</text>)}
+			{meridians.map((lon) => <text x={project({ lat: 0, lon }).x + 6} y={height - 10}>{deg(lon)} E</text>)}
+		</g>
+
+		<polyline
+			points={drunkPoints}
+			fill="none"
+			class="stroke-trail"
+			stroke-width="2.6"
+			stroke-linecap="round"
+			stroke-linejoin="round"
+		></polyline>
+		<g class="fill-trail">
+			{backArrows.map((a) => <path d={arrowHead} transform={`translate(${a.x} ${a.y}) rotate(${a.a})`} />)}
+		</g>
+		<g class="fill-trail font-hand" font-weight="700">
+			<text x={backLabel[0] + 12} y={backLabel[1] + 8} font-size="24" transform={`rotate(-8 ${backLabel[0]} ${backLabel[1]})`}>
+				zpět ≈ {drunkKm} km
+			</text>
+			<text x={lost[0] - 8} y={lost[1] - 8} text-anchor="end" font-size="19" transform={`rotate(-8 ${lost[0]} ${lost[1]})`}>
+				Kde to ku... su?
+			</text>
+		</g>
+
+		<!-- Cemetery as on a topographic map: fenced plot with crosses -->
+		<g transform={`translate(${cemetery[0] - 26} ${cemetery[1]})`} class="text-ink">
+			<rect x="-17" y="-11" width="34" height="22" fill="#e6e2cf" stroke="currentColor" stroke-width="1.2"></rect>
+			<path
+				d="M-9 -6v8M-12 -3h6M0 -6v8M-3 -3h6M9 -6v8M6 -3h6M-4.5 3v6M-7.5 5h6M4.5 3v6M1.5 5h6"
+				stroke="currentColor"
+				stroke-width="1.1"
+				fill="none"></path>
+			<text y="26" text-anchor="middle" class="fill-ink-soft font-news" font-size="13" font-style="italic">Hřbitov</text>
+		</g>
+
+		<line
+			x1={school.x}
+			y1={school.y}
+			x2={town.x}
+			y2={town.y}
+			class="stroke-water"
+			stroke-width="2.5"
+			stroke-dasharray="10 7"
+			stroke-linecap="round"
+		></line>
+		<path d={arrowHead} class="fill-water" transform={`translate(${thereArrow.x} ${thereArrow.y}) rotate(${thereArrow.a}) scale(1.15)`} />
+		<g transform={`translate(${mid.x} ${mid.y}) rotate(${angle})`}>
+			<text y="-12" text-anchor="middle" class="fill-water font-cond" font-size="17" font-weight="600">tam ≈ {km} km</text>
+		</g>
+
+		{
+			logoUrl && (
+				<image
+					href={logoUrl}
+					x={logoBox.x}
+					y={logoBox.y}
+					width={logoBox.size}
+					height={logoBox.size}
+					preserveAspectRatio="xMidYMid meet"
+					aria-label="Logo VŠB – Technické univerzity Ostrava"
+				/>
+			)
+		}
+
+		<g transform={`translate(${school.x} ${school.y})`}>
+			<circle r="9" class="fill-news stroke-ink" stroke-width="2.5"></circle>
+			<circle r="3.5" class="fill-ink"></circle>
+			<text x="16" y="-4" class="fill-ink font-news" font-size="21" font-weight="700">VŠB-TUO</text>
+			<text x="16" y="16" class="fill-ink-soft font-mono" font-size="12">Ostrava-Poruba</text>
+		</g>
+
+		<!-- Glass of red wine next to the venue -->
+		<g transform={`translate(${town.x - 36} ${town.y - 2}) rotate(-10)`} class="text-ink" aria-hidden="true">
+			<path d="M-8.5 -5C-8 3-4.5 6 0 6S8 3 8.5-5Z" fill="#8e1b2e"></path>
+			<path
+				d="M-10 -16C-10.5 0-6 6 0 6S10.5 0 10-16ZM0 6V18M-7 18.5H7"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="1.8"
+				stroke-linecap="round"
+				stroke-linejoin="round"></path>
+			<path d="M-6 -12C-6.5 -6 -5 -2 -3.5 0" fill="none" stroke="#fff" stroke-width="1.2" stroke-linecap="round" opacity="0.7"></path>
+		</g>
+
+		<g transform={`translate(${town.x} ${town.y})`}>
+			<circle r="22" class="fill-trail/15"></circle>
+			<circle r="10" class="fill-trail stroke-news" stroke-width="3"></circle>
+			<text x="18" y="30" class="fill-ink font-news" font-size="21" font-weight="700">Dolní Bojanovice</text>
+			<text x="18" y="48" class="fill-ink-soft font-mono" font-size="12">sraz · {event.start.y}</text>
+		</g>
+
+		<g transform={`translate(${width - 24} 28)`} class="fill-ink text-ink">
+			<path d="M0 -14 L7 8 L0 3 L-7 8 Z" fill="currentColor"></path>
+			<text y="26" text-anchor="middle" class="font-mono" font-size="13" font-weight="600">S</text>
+		</g>
+
+		<g transform={`translate(${width - 24 - scalePx} ${height - 52})`} class="text-ink">
+			<rect width={scalePx / 2} height="6" fill="currentColor"></rect>
+			<rect x={scalePx / 2} width={scalePx / 2} height="6" fill="none" stroke="currentColor" stroke-width="1.5"></rect>
+			<text y="-6" class="fill-ink font-mono" font-size="11">0</text>
+			<text x={scalePx} y="-6" text-anchor="end" class="fill-ink font-mono" font-size="11">{scaleKm} km</text>
+		</g>
+	</svg>
+	<figcaption class="mt-2 text-xs leading-relaxed text-ink-soft italic">
+		WGS 84 · ekvidistantní válcové zobrazení (φ₀ = {phiLabel}°) · polohy obce a kampusu: © přispěvatelé OpenStreetMap
+	</figcaption>
+</figure>

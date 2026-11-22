@@ -1,0 +1,102 @@
+---
+import { edgePath, rng, type Edges } from '../lib/scrap';
+
+// A piece of paper on the board: tilt, edge shape, shadow and how it is attached.
+interface Props {
+	seed: number;
+	edges?: Edges;
+	paper?: string;
+	rotate?: number;
+	attach?: 'pin' | 'tape' | 'tape-corners' | 'none';
+	/** Straighten on hover (only for small scraps). */
+	lift?: boolean;
+	class?: string;
+	innerClass?: string;
+	style?: string;
+}
+
+const {
+	seed,
+	edges = 'torn',
+	paper = 'var(--color-news)',
+	attach = 'pin',
+	lift = false,
+	class: className,
+	innerClass,
+	style,
+} = Astro.props;
+
+const rand = rng(seed * 7919 + 17);
+const rotate = Astro.props.rotate ?? (seed % 2 === 0 ? -1 : 1) * (1 + rand() * 3);
+const clipPath = edgePath(edges, seed);
+const pinColors = ['#c8332f', '#3f7fb5', '#5e7d45', '#d89a1c'];
+const pinColor = pinColors[seed % pinColors.length];
+---
+
+<div
+	class:list={['scrap relative', lift && 'scrap-lift', className]}
+	style={`--r:${rotate.toFixed(2)}deg;${style ?? ''}`}
+>
+	<div class="drop-shadow-[0_7px_9px_rgba(40,30,15,0.33)]">
+		<div
+			class:list={['relative', innerClass]}
+			style={`${clipPath ? `clip-path:${clipPath};` : ''}background-color:${paper};background-image:linear-gradient(165deg,rgba(255,255,255,.18),rgba(120,90,40,.10))`}
+		>
+			<slot />
+		</div>
+	</div>
+
+	{
+		attach === 'pin' && (
+			<span
+				class="absolute -top-2 left-1/2 size-5 -translate-x-1/2 rounded-full shadow-[2px_4px_4px_rgba(0,0,0,0.35)]"
+				style={`background:radial-gradient(circle at 35% 30%, #fff9 0 2px, ${pinColor} 3px)`}
+				aria-hidden="true"
+			/>
+		)
+	}
+	{
+		attach === 'tape' && (
+			<span
+				class="absolute -top-3 left-1/2 h-7 w-24 -translate-x-1/2 bg-[#fffbe6]/55 shadow-sm ring-1 ring-black/5"
+				style={`rotate:${(-rotate * 1.5).toFixed(1)}deg`}
+				aria-hidden="true"
+			/>
+		)
+	}
+	{
+		attach === 'tape-corners' && (
+			<>
+				<span class="absolute -top-2 -left-5 h-7 w-24 -rotate-[35deg] bg-[#fffbe6]/55 shadow-sm ring-1 ring-black/5" aria-hidden="true" />
+				<span class="absolute -top-2 -right-5 h-7 w-24 rotate-[35deg] bg-[#fffbe6]/55 shadow-sm ring-1 ring-black/5" aria-hidden="true" />
+			</>
+		)
+	}
+</div>
+
+<style>
+	.scrap {
+		rotate: var(--r);
+	}
+	.scrap-lift {
+		transition:
+			rotate 0.25s ease,
+			scale 0.25s ease;
+	}
+	.scrap-lift:hover,
+	.scrap-lift:focus-within {
+		rotate: 0deg;
+		scale: 1.04;
+		z-index: 10;
+	}
+	@media (max-width: 639px) {
+		.scrap {
+			rotate: calc(var(--r) * 0.6);
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.scrap-lift {
+			transition: none;
+		}
+	}
+</style>

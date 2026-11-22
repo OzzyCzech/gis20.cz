@@ -1,0 +1,147 @@
+---
+import { event, rsvpForm } from '../data/event';
+import Scrap from './Scrap.astro';
+
+// RSVP as a cut-out coupon. Answers go to a Google Form (see rsvpFormLink in event.ts).
+// Without a configured form the slip only renders in dev, so production never shows a dead form.
+const form = rsvpForm();
+const visible = Boolean(form) || import.meta.env.DEV;
+const field =
+	'mt-1 block w-full border-0 border-b-2 border-dotted border-ink/60 bg-transparent px-1 py-1.5 font-hand text-2xl leading-tight outline-none focus:border-solid focus:border-water';
+---
+
+{
+	visible && (
+		<section aria-labelledby="prihlaska" class="mt-24 flex justify-center">
+			<Scrap
+				seed={30}
+				rotate={-1.2}
+				edges="cut"
+				paper="#fffdf6"
+				attach="tape"
+				class="w-full max-w-xl"
+				innerClass="p-3"
+			>
+				<div class="border-2 border-dashed border-ink/60 px-6 pt-5 pb-7 sm:px-8">
+					<p class="text-sm text-ink-soft italic" aria-hidden="true">
+						✂ zde odstřihněte
+					</p>
+					<h2 id="prihlaska" class="mt-2 text-[2rem] leading-tight font-bold">
+						Závazná přihláška
+					</h2>
+					<p class="mt-1 text-lg">
+						na sraz {event.start.d}.–{event.end.d}.&nbsp;{event.start.m}.&nbsp;{event.start.y}, {event.venue.toLowerCase()},{' '}
+						{event.town}
+					</p>
+					{event.rsvpDeadline && (
+						<p class="mt-2">
+							Přihlas se prosím do <strong>{event.rsvpDeadline}</strong>.
+						</p>
+					)}
+
+					<form
+						data-rsvp
+						method="post"
+						action={form?.action}
+						class="mt-6 grid gap-5 sm:grid-cols-2"
+						autocomplete="on"
+					>
+						<label class="block">
+							<span class="text-sm text-ink-soft">Jméno a příjmení</span>
+							<input
+								class={field}
+								type="text"
+								name={form?.name ?? 'name'}
+								autocomplete="name"
+								required
+								maxlength="80"
+							/>
+						</label>
+						<label class="block">
+							<span class="text-sm text-ink-soft">Telefon</span>
+							<input
+								class={field}
+								type="tel"
+								name={form?.phone ?? 'phone'}
+								autocomplete="tel"
+								inputmode="tel"
+								pattern="[+0-9 ]{9,17}"
+								title="Telefonní číslo, např. 777 123 456 nebo +420 777 123 456"
+								required
+							/>
+						</label>
+						<div class="flex flex-wrap items-center gap-x-5 gap-y-3 sm:col-span-2">
+							<button
+								type="submit"
+								class="border-2 border-ink bg-ink px-5 py-2.5 font-cond text-lg font-semibold text-news transition-colors hover:border-trail hover:bg-trail disabled:opacity-60"
+							>
+								Potvrdit účast
+							</button>
+							<p class="text-xs text-ink-soft">Jméno a telefon použijeme jen pro organizaci srazu.</p>
+						</div>
+					</form>
+
+					<div data-rsvp-done hidden class="mt-6">
+						<p class="inline-block -rotate-6 border-4 border-double border-trail/80 px-5 py-2 font-cond text-2xl font-semibold tracking-wide text-trail/90 uppercase">
+							Zapsáno
+						</p>
+						<p class="mt-4 text-lg">Díky, počítáme s tebou! Uvidíme se ve sklepě.</p>
+					</div>
+					<p data-rsvp-error hidden class="mt-4 font-semibold text-trail" role="alert"></p>
+
+					{(event.contactEmail || event.contactPhone) && (
+						<p class="mt-6 border-t border-ink/20 pt-3 text-sm text-ink-soft">
+							Dotazy:{' '}
+							{event.contactEmail && (
+								<a class="underline" href={`mailto:${event.contactEmail}`}>
+									{event.contactEmail}
+								</a>
+							)}
+							{event.contactEmail && event.contactPhone && ', '}
+							{event.contactPhone && (
+								<a class="underline" href={`tel:${event.contactPhone.replace(/\s/g, '')}`}>
+									{event.contactPhone}
+								</a>
+							)}
+						</p>
+					)}
+					{event.paymentInfo && <p class="mt-3 text-sm">{event.paymentInfo}</p>}
+				</div>
+			</Scrap>
+		</section>
+	)
+}
+
+<script>
+	const form = document.querySelector<HTMLFormElement>('[data-rsvp]');
+	const done = document.querySelector<HTMLElement>('[data-rsvp-done]');
+		const error = document.querySelector<HTMLElement>('[data-rsvp-error]');
+
+	form?.addEventListener('submit', async (e) => {
+		e.preventDefault();
+		if (!form.reportValidity()) return;
+		error!.hidden = true;
+
+		const action = form.getAttribute('action');
+		if (!action) {
+			error!.textContent = 'Formulář zatím není napojený na Google Formulář (vidíš to jen při vývoji).';
+			error!.hidden = false;
+			return;
+		}
+
+		const button = form.querySelector<HTMLButtonElement>('button[type=submit]')!;
+		button.disabled = true;
+		const data = new FormData(form);
+		try {
+			// Google Forms sends no CORS headers: the response is opaque, so a resolved
+			// request is the best success signal available.
+			await fetch(action, { method: 'POST', mode: 'no-cors', body: new URLSearchParams(data as unknown as Record<string, string>) });
+			form.hidden = true;
+			done!.hidden = false;
+		} catch {
+			error!.textContent = 'Přihlášku se nepodařilo odeslat. Zkontroluj připojení k internetu a zkus to znovu.';
+			error!.hidden = false;
+			button.disabled = false;
+		}
+	});
+</script>

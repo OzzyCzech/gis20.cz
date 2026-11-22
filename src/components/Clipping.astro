@@ -1,0 +1,139 @@
+---
+import type { ImageMetadata } from 'astro';
+import { Image } from 'astro:assets';
+import type { Clipping } from '../data/clippings';
+import { rng } from '../lib/scrap';
+import ClippingArt from './ClippingArt.astro';
+import Scrap from './Scrap.astro';
+
+interface Props {
+	clipping: Clipping;
+	seed: number;
+}
+
+const { clipping: c, seed } = Astro.props;
+
+// Scattered look on wider screens: nudge each scrap a little off the grid.
+const rand = rng(seed * 31 + 5);
+const shiftX = Math.round(-14 + rand() * 28);
+const shiftY = Math.round(-10 + rand() * 28);
+const widths = ['sm:w-80', 'sm:w-72', 'sm:w-[21rem]', 'sm:w-64'];
+const width = c.image ? 'sm:w-[22rem]' : c.kind === 'classified' ? 'sm:w-60' : widths[seed % widths.length];
+const paper = c.kind === 'ad' ? '#f6efdc' : c.kind === 'classified' ? '#ede3c8' : undefined;
+// Ruler under a photo: 20 ticks per unit, labelled 0, ½ and 1 <unit>.
+const scale = c.image?.scale;
+const ruler = scale && {
+	x0: scale.from * 2,
+	x1: scale.to * 2,
+	ticks: Array.from({ length: 40 }, (_, i) => ({ x: scale.from * 2 + (i * (scale.to - scale.from) * 2) / 20, h: i % 10 === 0 ? 7 : i % 5 === 0 ? 5 : 3 }))
+		.filter((t) => t.x < 199)
+		.map((t) => `M${t.x.toFixed(1)} 0.6v${t.h}`)
+		.join(''),
+};
+const footers = c.footer === undefined ? [] : Array.isArray(c.footer) ? c.footer : [c.footer];
+const attach = seed % 3 === 0 ? 'tape' : seed % 3 === 1 ? 'pin' : 'none';
+
+// Optional photo; a missing file simply leaves the clipping without it.
+const photos = import.meta.glob<{ default: ImageMetadata }>('../assets/clippings/*.{png,jpg,jpeg,webp}', { eager: true });
+const photo = c.image && Object.entries(photos).find(([path]) => path.endsWith(`/${c.image!.file}`))?.[1].default;
+---
+
+<Scrap
+	seed={seed}
+	paper={paper}
+	attach={attach}
+	lift
+	class:list={['nudge w-full max-w-[22rem] shrink-0', width]}
+	style={`--x:${shiftX}px;--y:${shiftY}px`}
+	innerClass="px-5 pt-6 pb-7 sm:px-6"
+>
+	{
+		c.kind === 'ad' ? (
+			<div class="border-4 border-double border-ink px-4 py-5 text-center">
+				<p class="text-xs italic">{c.kicker}</p>
+				{c.art && (
+					<div class="mx-auto mt-3 max-w-[15rem]">
+						<ClippingArt art={c.art} id={`c${seed}`} />
+					</div>
+				)}
+				<h3 class="mt-2 font-cond text-4xl leading-none font-bold tracking-tight uppercase">{c.headline}</h3>
+				<p class="mt-3 text-[15px] leading-snug">{c.body}</p>
+				{footers.length > 0 && (
+					<div class="mt-3 border-t border-ink/40 pt-2 text-sm italic">
+						{footers.map((line, i) => (
+							<p class:list={[i > 0 && 'mt-1']}>{line}</p>
+						))}
+					</div>
+				)}
+			</div>
+		) : (
+			<>
+				{(c.masthead || c.date) && (
+					<div class="mb-3 flex items-baseline justify-between gap-3 border-y border-ink/70 py-1 text-[11px] italic">
+						<span>{c.masthead}</span>
+						<span class="tabular-nums not-italic">{c.date}</span>
+					</div>
+				)}
+				<p class="font-cond text-[12px] font-semibold tracking-wide text-trail">{c.kicker}</p>
+				<h3
+					class:list={[
+						'mt-1 leading-[1.05] font-bold tracking-tight text-balance',
+						c.kind === 'classified' ? 'text-xl' : 'text-[1.7rem]',
+					]}
+				>
+					{c.headline}
+				</h3>
+				{c.deck && <p class="mt-1 text-lg leading-snug italic">{c.deck}</p>}
+				{c.art && (
+					<div class="mt-3 border border-ink/30 bg-news-dark p-2">
+						<ClippingArt art={c.art} id={`c${seed}`} />
+					</div>
+				)}
+				{photo && c.image && (
+					<figure class="mx-auto mt-3" style={`width:${c.image.width ?? 100}%`}>
+						<Image
+							src={photo}
+							alt={c.image.alt}
+							width={640}
+							class="h-auto w-full contrast-125 grayscale mix-blend-multiply"
+						/>
+						{ruler && (
+							<svg viewBox="0 0 200 18" class="mt-1 h-auto w-full text-ink" aria-hidden="true">
+								<rect x="0.6" y="0.6" width="198.8" height="16.8" fill="#f4ecd8" stroke="currentColor" stroke-width="1.2" />
+								<path d={ruler.ticks} stroke="currentColor" stroke-width="1" />
+								<g fill="currentColor" font-family="Oswald Variable, sans-serif" font-size="7" font-weight="600">
+									<text x={ruler.x0 + 1.5} y="15">0</text>
+									<text x={(ruler.x0 + ruler.x1) / 2} y="15" text-anchor="middle">½</text>
+									<text x={ruler.x1} y="15" text-anchor="middle">1 {scale!.unit}</text>
+								</g>
+							</svg>
+						)}
+						{c.image.caption && <figcaption class="mt-1 text-xs italic">{c.image.caption}</figcaption>}
+					</figure>
+				)}
+				<p class="mt-3 text-[15px] leading-snug text-pretty hyphens-auto">{c.body}</p>
+				{c.facsimile && (
+					<figure class="mt-3 -rotate-1 border border-ink/30 bg-receipt px-4 py-3 font-mono text-[12px] leading-snug shadow-sm">
+						{c.facsimile.from && <p class="text-ink-soft">Od: {c.facsimile.from}</p>}
+						<p class="text-ink-soft">Předmět: {c.facsimile.subject}</p>
+						<div class="mt-3 text-base font-bold">
+							{c.facsimile.text.map((line) => (line ? <p>{line}</p> : <p aria-hidden="true">&nbsp;</p>))}
+						</div>
+					</figure>
+				)}
+				{c.after && <p class="mt-3 text-[15px] leading-snug text-pretty hyphens-auto" set:html={c.after} />}
+				{footers.map((line) => (
+					<p class="mt-2 text-sm italic">{line}</p>
+				))}
+			</>
+		)
+	}
+</Scrap>
+
+<style>
+	@media (min-width: 640px) {
+		:global(.nudge) {
+			translate: var(--x) var(--y);
+		}
+	}
+</style>

@@ -1,0 +1,56 @@
+---
+import { event } from '../data/event';
+
+// Computed in the browser: a build-time value would go stale on a static site.
+interface Props {
+	class?: string;
+	numClass?: string;
+	labelClass?: string;
+}
+
+const { class: className, numClass, labelClass } = Astro.props;
+const { start, end } = event;
+---
+
+<p
+	class={className}
+	data-countdown
+	data-start={`${start.y}-${start.m}-${start.d}`}
+	data-end={`${end.y}-${end.m}-${end.d}`}
+	hidden
+>
+	<span data-num class:list={['block', numClass]}></span>
+	<span data-label class:list={['block', labelClass]}></span>
+</p>
+
+<script>
+	for (const el of document.querySelectorAll<HTMLElement>('[data-countdown]')) {
+		const parse = (s: string) => {
+			const [y, m, d] = s.split('-').map(Number);
+			return new Date(y, m - 1, d); // local midnight, not UTC
+		};
+		const start = parse(el.dataset.start!);
+		const end = parse(el.dataset.end!);
+		const afterEnd = new Date(end.getFullYear(), end.getMonth(), end.getDate() + 1);
+		const now = new Date();
+		const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+		const num = el.querySelector<HTMLElement>('[data-num]')!;
+		const label = el.querySelector<HTMLElement>('[data-label]')!;
+
+		if (today < start) {
+			// Rounding absorbs the 23/25 h days around DST changes.
+			const days = Math.round((start.getTime() - today.getTime()) / 86_400_000);
+			const word = days === 1 ? 'den' : days >= 2 && days <= 4 ? 'dny' : 'dní';
+			num.textContent = days === 1 ? 'Zítra!' : `Ještě ${days} ${word}`;
+			label.textContent = 'a jedeme chlastat do sklepa!';
+		} else if (today < afterEnd) {
+			num.textContent = 'Na zdraví!';
+			label.textContent = 'Sraz právě probíhá.';
+		} else {
+			num.textContent = 'Proběhlo.';
+			label.textContent = 'Díky všem, kdo dorazili.';
+		}
+		el.hidden = false;
+	}
+</script>

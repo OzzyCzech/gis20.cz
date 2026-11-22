@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+@theme {
+	--font-news: "Newsreader Variable", "Iowan Old Style", Georgia, serif;
+	--font-cond: "Oswald Variable", "Arial Narrow", sans-serif;
+	--font-hand: "Caveat Variable", "Bradley Hand", cursive;
+	--font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+	--color-map: #edead8;
+	--color-ink: #1e1a16;
+	--color-ink-soft: #5a4e44;
+	--color-news: #f2e9d3;
+	--color-news-dark: #e4d8bb;
+	--color-receipt: #fbfaf5;
+	--color-sticky: #f6e27f;
+	--color-trail: #c8332f;
+	--color-water: #3f7fb5;
+	--color-contour: #9c6c3a;
+	--color-forest: #5e7d45;
+	--color-wine: #7a2a5a;
+}
+
+@layer base {
+	html {
+		background: var(--color-map) url("/map.svg") 0 0 / 1200px 1200px repeat;
+		color: var(--color-ink);
+		-webkit-text-size-adjust: 100%;
+		scroll-behavior: smooth;
+	}
+	body {
+		font-family: var(--font-news);
+	}
+	::selection {
+		background-color: var(--color-sticky);
+		color: var(--color-ink);
+	}
+	a:focus-visible,
+	button:focus-visible {
+		outline: 3px solid var(--color-water);
+		outline-offset: 3px;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	html {
+		scroll-behavior: auto;
+	}
+}

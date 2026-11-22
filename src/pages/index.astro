@@ -1,0 +1,246 @@
+---
+import Base from '../layouts/Base.astro';
+import Clipping from '../components/Clipping.astro';
+import ClippingArt from '../components/ClippingArt.astro';
+import Countdown from '../components/Countdown.astro';
+import RouteMap from '../components/RouteMap.astro';
+import Scrap from '../components/Scrap.astro';
+import { clippings } from '../data/clippings';
+import {
+	distanceKm,
+	event,
+	formatCoord,
+	formatCzk,
+	formatDateRange,
+	formatDateRangeLong,
+	formatWeekdays,
+	mapLinks,
+} from '../data/event';
+
+const startDate = new Date(event.start.y, event.start.m - 1, event.start.d);
+const dateline = startDate.toLocaleDateString('cs-CZ', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+const month = startDate.toLocaleDateString('cs-CZ', { month: 'long' });
+const dateRange = formatDateRange();
+const dateRangeLong = formatDateRangeLong();
+const weekdays = formatWeekdays().replace('–', ' a ');
+const price = formatCzk(event.price);
+const { lat, lon } = event.townCoords;
+const coords = `${formatCoord(lat, 'lat')}, ${formatCoord(lon, 'lon')}`;
+const links = mapLinks(event.townCoords);
+const km = Math.round(distanceKm(event.schoolCoords, event.townCoords));
+
+const title = `${event.title}, ${dateRange}`;
+const description = `Pozvánka na sraz absolventů oboru ${event.field} z VŠB-TUO ${event.yearsSince} let od promocí: ${dateRangeLong}, vinný sklep v Dolních Bojanovicích, ${price} za víno a jídlo.`;
+
+const button =
+	'inline-block border-2 border-ink px-4 py-2 font-cond text-lg font-semibold leading-tight transition-colors hover:bg-ink hover:text-news';
+---
+
+<Base title={title} description={description}>
+	<main class="mx-auto max-w-6xl overflow-x-clip px-4 pt-10 pb-16 sm:px-6 lg:pt-16">
+		<div class="grid items-start gap-x-10 gap-y-14 lg:grid-cols-12">
+			<!-- Front page of a made-up newspaper: the invitation itself -->
+			<Scrap
+				seed={1}
+				rotate={-1.2}
+				attach="tape-corners"
+				class="lg:col-span-7"
+				innerClass="@container px-5 pt-7 pb-9 sm:px-9 sm:pt-9 sm:pb-11"
+			>
+				<header>
+					<div class="flex justify-between border-b border-ink pb-1 text-xs italic sm:text-sm">
+						<span>Ročník XX</span>
+						<span>Mimořádné vydání</span>
+					</div>
+					<p class="py-2 text-center text-[clamp(2.1rem,9vw,3.75rem)] leading-none font-extrabold tracking-tight">
+						Gisácký deník
+					</p>
+					<div class="flex justify-between gap-4 border-y-[3px] border-double border-ink py-1 text-xs sm:text-sm">
+						<span>Ostrava – Dolní Bojanovice</span>
+						<span class="text-right first-letter:uppercase">{dateline}</span>
+					</div>
+				</header>
+
+				<h1 class="mt-6 text-[clamp(2.6rem,17cqi,7.4rem)] leading-[0.86] font-extrabold tracking-[-0.03em]">
+					Sraz po {event.yearsSince}&nbsp;letech
+				</h1>
+				<p class="mt-5 max-w-[34ch] text-xl leading-snug italic sm:text-2xl">
+					Po dvaceti letech se ročník geoinformatiky z ostravské VŠB znovu protne v jednom bodě: ve vinném sklepě v Dolních
+					Bojanovicích,{' '}
+					<a
+						href="/sraz.ics"
+						download="sraz-gisaku-2027.ics"
+						title="Uložit do kalendáře"
+						class="whitespace-nowrap underline decoration-1 underline-offset-4 transition-colors hover:text-trail"
+						>{dateRangeLong}</a
+					>.
+				</p>
+
+				<div class="mt-7 grid gap-6 border-t border-ink/60 pt-5 sm:grid-cols-[1fr_14rem]">
+					<div class="max-w-[60ch] text-[17px] leading-relaxed text-pretty hyphens-auto">
+						<p
+							class="first-letter:float-left first-letter:mt-1 first-letter:mr-2 first-letter:text-[3.6rem] first-letter:leading-[0.8] first-letter:font-bold"
+						>
+							Dvacet let je dost dlouhá doba (joj, to to letí!), abychom se zase sešli – tentokrát u vína na jižní Moravě.
+						</p>
+						<p class="mt-3">Sklípek, víno i jídlo jsou v ceně {price} na osobu. Termín si zapište do kalendáře!</p>
+						<p class="mt-3">Nocleh si zajistěte po vlastní ose, případně punkově kdekoliv, pokud bude teplo.</p>
+					</div>
+					<figure>
+						<div class="border border-ink/30 bg-news-dark p-2">
+							<ClippingArt art="wine" id="front" />
+						</div>
+						<figcaption class="mt-1 text-xs text-ink-soft italic">Ilustrační foto</figcaption>
+					</figure>
+				</div>
+			</Scrap>
+
+			<!-- Date, countdown and price as objects pinned next to the front page -->
+			<div class="mx-auto grid w-full max-w-xl grid-cols-2 items-start gap-x-5 gap-y-10 lg:col-span-5 lg:mx-0 lg:max-w-none lg:pt-4">
+				<Scrap seed={2} rotate={2.4} edges="torn-top" paper="#fffdf6" attach="pin" innerClass="pb-5 text-center">
+					<p class="bg-trail pt-4 pb-2 font-cond text-xl font-semibold text-white first-letter:uppercase">
+						{month}&nbsp;{event.start.y}
+					</p>
+					<p class="mt-3 font-cond text-[clamp(2.4rem,10vw,3.6rem)] leading-none font-bold tracking-tight">
+						{event.start.d}.–{event.end.d}.
+					</p>
+					<p class="mt-1 text-lg">{weekdays}</p>
+					<a href="/sraz.ics" download="sraz-gisaku-2027.ics" class:list={[button, 'mt-4 text-base']}>
+						Uložit do kalendáře
+					</a>
+				</Scrap>
+
+				<Scrap
+					seed={3}
+					rotate={-3.5}
+					edges="straight"
+					paper="var(--color-sticky)"
+					attach="none"
+					class="mt-10"
+					innerClass="flex aspect-square items-center p-4 sm:p-5"
+				>
+					<Countdown
+						class="font-hand leading-none"
+						numClass="text-[clamp(1.9rem,8vw,2.6rem)] font-bold"
+						labelClass="mt-2 text-[clamp(1.4rem,6vw,1.8rem)]"
+					/>
+				</Scrap>
+
+				<Scrap
+					seed={4}
+					rotate={1.8}
+					edges="zigzag"
+					paper="var(--color-receipt)"
+					attach="tape"
+					class="col-span-2 w-full max-w-[17rem] justify-self-center"
+					innerClass="px-5 pt-6 pb-8 font-mono text-[13px] leading-relaxed uppercase"
+				>
+					<p class="-mt-1 mb-3 -rotate-3 text-center font-hand text-[1.7rem] leading-none font-bold text-water normal-case">
+						Kolik to stojí?
+					</p>
+					<p class="text-center font-bold">{event.venue}</p>
+					<p class="text-center">{event.town}</p>
+					<p class="text-center">{dateRange}</p>
+					<p class="my-2 overflow-hidden whitespace-nowrap text-ink-soft" aria-hidden="true">
+						- - - - - - - - - - - - - - - - - - - -
+					</p>
+					<p class="flex justify-between"><span>Víno</span><span>v ceně</span></p>
+					<p class="flex justify-between"><span>Jídlo</span><span>v ceně</span></p>
+					<p class="my-2 overflow-hidden whitespace-nowrap text-ink-soft" aria-hidden="true">
+						- - - - - - - - - - - - - - - - - - - -
+					</p>
+					<p class="flex justify-between text-base font-bold"><span>Celkem</span><span class="normal-case">{price}</span></p>
+					<p class="text-right">za osobu</p>
+					<p class="mt-3 text-center normal-case">Na zdraví!</p>
+				</Scrap>
+			</div>
+
+			<!-- Where: newspaper note + torn piece of map -->
+			<Scrap seed={5} rotate={1.5} attach="pin" class="lg:col-span-5 lg:mt-10" innerClass="px-6 pt-7 pb-8">
+				<h2 class="text-[2rem] leading-[1.05] font-bold tracking-tight">Z Báňské až do sklepa</h2>
+				<p class="mt-3 text-[17px] leading-relaxed">
+					Sejdeme se ve vinném sklepě v Dolních Bojanovicích. Z Poruby je to vzdušnou čarou asi {km}&nbsp;km. Po silnici to
+					bude víc, ale trasu si jako gisáci spočítá každý sám.
+				</p>
+				<p class="mt-4 text-sm text-ink-soft">Souřadnice obce: <span class="font-mono">{coords}</span></p>
+				<p class="mt-4 flex flex-wrap gap-3">
+					<a href={links.mapy} target="_blank" rel="noopener" class={button}>Otevřít v Mapy.com</a>
+					<a href={links.osm} target="_blank" rel="noopener" class={button}>OpenStreetMap</a>
+				</p>
+			</Scrap>
+
+			<Scrap
+				seed={6}
+				rotate={-1.6}
+				paper="#f4f1e1"
+				attach="tape-corners"
+				class="lg:col-span-7"
+				innerClass="px-4 pt-6 pb-6 sm:px-6"
+			>
+				<RouteMap />
+			</Scrap>
+		</div>
+
+		<!-- Archive of fake clippings -->
+		<section aria-labelledby="archiv" class="mt-24">
+			<div class="mb-12 flex justify-center">
+				<Scrap seed={8} rotate={-2} edges="cut" paper="#fffdf6" attach="pin" innerClass="px-7 py-4 text-center">
+					<h2 id="archiv" class="text-3xl font-bold sm:text-4xl">Z gisákova archivu</h2>
+					<p class="mt-1 text-ink-soft italic">útržky z doby, kdy se data nosila na disketách</p>
+				</Scrap>
+			</div>
+			<div class="flex flex-wrap items-start justify-center gap-x-6 gap-y-10 sm:gap-x-3 sm:gap-y-6">
+				{clippings.map((clipping, i) => <Clipping clipping={clipping} seed={10 + i} />)}
+			</div>
+		</section>
+
+	</main>
+
+	<!-- Map legend doubles as the footer -->
+	<footer class="mx-auto flex max-w-6xl flex-col gap-8 px-4 pb-10 sm:flex-row sm:items-end sm:justify-between sm:px-6">
+		<!-- Approval stamp, as in the corner of a map sheet -->
+		<div class="-rotate-6 self-start pl-2 sm:self-end sm:pb-4">
+			<div class="border-4 border-double border-trail/80 px-5 py-2.5 text-trail/90">
+				<p class="font-cond text-lg font-semibold tracking-wide uppercase">Mapové podklady schválil Ozzy</p>
+			</div>
+		</div>
+
+		<Scrap
+			seed={40}
+			rotate={0}
+			edges="straight"
+			paper="#fbfaf5"
+			attach="none"
+			class="max-w-sm"
+			innerClass="border border-ink/70 px-5 py-4 text-sm"
+		>
+			<p class="font-bold">Legenda</p>
+			<ul class="mt-2 grid grid-cols-2 gap-x-4 gap-y-1.5">
+				<li class="flex items-center gap-2">
+					<svg viewBox="0 0 28 10" class="h-2.5 w-7" aria-hidden="true"
+						><path d="M1 7c6-6 10 2 26-4" fill="none" stroke="#b98a57" stroke-width="1.7"></path></svg
+					>
+					vrstevnice
+				</li>
+				<li class="flex items-center gap-2">
+					<svg viewBox="0 0 28 10" class="h-2.5 w-7" aria-hidden="true"
+						><path d="M1 5h26" stroke="#c8332f" stroke-width="2.2" stroke-dasharray="5 3"></path></svg
+					>
+					turistická trasa
+				</li>
+				<li class="flex items-center gap-2">
+					<svg viewBox="0 0 28 10" class="h-2.5 w-7" aria-hidden="true"
+						><path d="M1 6c8-4 14 2 26-2" fill="none" stroke="#9cc6e4" stroke-width="6"></path></svg
+					>
+					vodní tok
+				</li>
+				<li class="flex items-center gap-2">
+					<svg viewBox="0 0 28 10" class="h-2.5 w-7" aria-hidden="true"
+						><rect x="1" y="1" width="26" height="8" rx="3" fill="#d3e2bd"></rect></svg
+					>
+					les
+				</li>
+			</ul>
+		</Scrap>
+	</footer>
+</Base>
