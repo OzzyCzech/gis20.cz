@@ -128,6 +128,7 @@ export const clippings: Clipping[] = [
 		kicker: 'Černá kronika',
 		headline: 'Nechal otevřeno',
 		body: 'Student oslavil Den dětí otevřenými dveřmi učebny J339. Neznámý pachatel příležitosti využil a odnesl si na oslavu projektor za 60 tisíc korun.',
+		footer: 'Tak to jsem v prdeli.',
 	},
 	{
 		kind: 'news',
