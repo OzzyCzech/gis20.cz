@@ -1,0 +1,23 @@
+---
+import Base from '../layouts/Base.astro';
+import Scrap from '../components/Scrap.astro';
+import { event } from '../data/event';
+
+// GitHub Pages serves dist/404.html for every unknown URL.
+const button =
+	'inline-block border-2 border-ink px-4 py-2 font-cond text-lg font-semibold leading-tight transition-colors hover:bg-ink hover:text-news';
+---
+
+<Base title={`Stránka nenalezena – ${event.title}`} description="Tahle stránka na mapě není.">
+	<main class="mx-auto flex min-h-dvh max-w-xl items-center px-4 py-16 sm:px-6">
+		<Scrap seed={404} rotate={-1.8} attach="tape-corners" class="w-full" innerClass="px-6 pt-7 pb-9 sm:px-9">
+			<div class="flex justify-between border-b border-ink pb-1 text-xs italic sm:text-sm">
+				<span>Gisácký deník</span>
+				<span>Chyba 404</span>
+			</div>
+			<h1 class="mt-6 text-[clamp(2.6rem,11vw,4.5rem)] leading-[0.9] font-extrabold tracking-[-0.03em]">Včil jsme v&nbsp;řiti!</h1>
+			<p class="mt-5 text-xl leading-snug italic">Tahle stránka na mapě není. Souřadnice nesedí a GPS hledá signál už třetí hodinu.</p>
+			<p class="mt-7"><a href="/" class={button}>Zpátky na pozvánku</a></p>
+		</Scrap>
+	</main>
+</Base>
