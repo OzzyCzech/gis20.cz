@@ -9,5 +9,7 @@ export default defineConfig({
 	site: 'https://gis20.cz',
 	vite: {
 		plugins: [tailwindcss()],
+		// The RSVP API lives in the Worker; run `npx wrangler dev` next to `npm run dev` to use it locally.
+		server: { proxy: { '/api': 'http://localhost:8787' } },
 	},
 });

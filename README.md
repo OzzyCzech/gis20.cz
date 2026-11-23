@@ -47,6 +47,7 @@ DNS for gis20.cz is managed in the same Cloudflare account.
 ```sh
 export CLOUDFLARE_ACCOUNT_ID=<account id>
 npm run deploy                                        # astro build + wrangler deploy
+npx wrangler dev                                      # local Worker + API on :8787 (npm run dev proxies /api there)
 npx wrangler secret put RESEND_API_KEY                # Resend API key for e-mails
 npx wrangler d1 execute gis20-rsvp --remote --file worker/schema.sql   # create the table (once)
 npx wrangler d1 execute gis20-rsvp --remote --command "SELECT name, email, phone, note, status, updated_at FROM registrations ORDER BY created_at"

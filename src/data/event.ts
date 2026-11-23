@@ -26,9 +26,9 @@ export const event = {
 	// VŠB-TUO campus in Ostrava-Poruba, from OpenStreetMap (Nominatim).
 	schoolCoords: { lat: 49.83385, lon: 18.1647 } satisfies LatLon,
 
-	// RSVP API served by the same Cloudflare Worker as the site (worker/src/index.ts), e.g. '/api'.
-	// Leave empty to hide the RSVP slip in production (hidden until confirmation e-mails work).
-	rsvpApi: '',
+	// RSVP API served by the same Cloudflare Worker as the site (worker/src/index.ts).
+	// In `npm run dev` it is proxied to `npx wrangler dev` (astro.config.mjs). Empty hides the RSVP slip.
+	rsvpApi: '/api',
 	// Optional extras shown on the RSVP slip.
 	contactEmail: '',
 	contactPhone: '',
