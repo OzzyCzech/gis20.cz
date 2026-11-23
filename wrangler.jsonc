@@ -21,7 +21,7 @@
 	// wrangler dev sends requests as https://gis20.cz (the first route); over http the Worker would redirect them.
 	"dev": { "upstream_protocol": "https" },
 	"vars": {
-		"MAIL_FROM": "Sraz gisáků <sraz@gis20.cz>",
+		"MAIL_FROM": "Gisácký sraz <sraz@gis20.cz>",
 		"SITE_URL": "https://gis20.cz/",
 		"ALLOWED_ORIGINS": "https://gis20.cz,https://www.gis20.cz,http://localhost:4321"
 	},

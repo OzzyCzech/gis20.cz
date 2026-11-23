@@ -48,7 +48,7 @@ const EVENT = {
 };
 // Classmates write to each other informally (tykání); the texts avoid gendered verb forms and the vocative,
 // since the name field can hold anything from a full name to a nickname.
-const SIGNATURE = 'Organizátoři srazu';
+const SIGNATURE = 'Zip, Maja, Vojta, Mini, Ozzy, Lenka a ostatní';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const PHONE_RE = /^\+?\d{9,15}$/;
@@ -198,18 +198,19 @@ async function answer(env: Env, data: Record<string, unknown>): Promise<[unknown
 		: null;
 	if (!row) return [{ error: 'Odkaz na změnu odpovědi není platný.' }, 404];
 
+	const viewToken = await ensureViewToken(env, row);
 	const wanted = data.attending === 'yes' || data.attending === 'no' ? (data.attending as Status) : null;
 	let mailed = false;
 	if (wanted && wanted !== row.status) {
 		const at = now();
-		const viewToken = row.view_token ?? newToken();
-		await env.DB.prepare('UPDATE registrations SET status = ?, view_token = ?, updated_at = ?, cancelled_at = ? WHERE id = ?')
-			.bind(wanted, viewToken, at, wanted === 'no' ? at : null, row.id)
+		await env.DB.prepare('UPDATE registrations SET status = ?, updated_at = ?, cancelled_at = ? WHERE id = ?')
+			.bind(wanted, at, wanted === 'no' ? at : null, row.id)
 			.run();
 		mailed = await sendAnswerMail(env, { ...row, status: wanted, view_token: viewToken });
 		row.status = wanted;
 	}
-	return [{ ok: true, name: row.name, coming: row.status === 'yes', mailed, count: await count(env) }, 200];
+	// The answer link is the stronger of the two, so its holder may also get the sheet link.
+	return [{ ok: true, name: row.name, coming: row.status === 'yes', sheet: viewToken, mailed, count: await count(env) }, 200];
 }
 
 async function answerLink(env: Env, data: Record<string, unknown>): Promise<[unknown, number]> {
@@ -218,10 +219,11 @@ async function answerLink(env: Env, data: Record<string, unknown>): Promise<[unk
 
 	const row = await findByEmail(env, email);
 	if (row) {
-		await sendMail(env, email, 'Sraz gisáků: odkaz na změnu odpovědi', [
+		const viewToken = await ensureViewToken(env, row);
+		await sendMail(env, email, 'Sraz gisáků: tvoje odkazy', [
 			p('Ahoj,'),
-			p('přišla nám žádost o odkaz na změnu odpovědi na sraz pro přihlášku pod jménem ', { b: row.name }, '.'),
-			links({ label: 'Změnit odpověď', href: answerUrl(env, row.token), intro: 'Odpověď změníš tady:', primary: true }),
+			p('přišla nám žádost o odkazy k přihlášce na sraz pod jménem ', { b: row.name }, '.'),
+			...personalLinks(env, row.token, viewToken, 'Kdo přijede, uvidíš na prezenční listině:', 'Odpověď změníš tady:'),
 			p('Pokud to nebyl tvůj požadavek, stačí tenhle e-mail ignorovat. Odpověď zůstává, jak byla.'),
 			signature(SIGNATURE),
 		]);
@@ -232,17 +234,28 @@ async function answerLink(env: Env, data: Record<string, unknown>): Promise<[unk
 
 // Confirmation after every answer or change. Both links only ever travel by e-mail, so knowing someone's
 // address is not enough to change their answer or to read the sheet.
+const personalLinks = (env: Env, token: string, viewToken: string, sheetIntro: string, changeIntro: string) => [
+	section('Jen pro tebe', 'Tyhle odkazy prosím nikomu neposílej.'),
+	links(
+		{ label: 'Prezenční listina', href: sheetUrl(env, viewToken), intro: sheetIntro },
+		{ label: 'Změnit odpověď', href: answerUrl(env, token), intro: changeIntro },
+	),
+];
+
+// Rows created before the sheet existed may lack a view token; give them one on first use.
+async function ensureViewToken(env: Env, row: Registration): Promise<string> {
+	if (row.view_token) return row.view_token;
+	const viewToken = newToken();
+	await env.DB.prepare('UPDATE registrations SET view_token = ? WHERE id = ?').bind(viewToken, row.id).run();
+	row.view_token = viewToken;
+	return viewToken;
+}
+
 async function sendAnswerMail(
 	env: Env,
 	row: { email: string; name: string; status: Status; token: string; view_token: string },
 ): Promise<boolean> {
-	const personal = (sheetIntro: string, changeIntro: string) => [
-		section('Jen pro tebe', 'Tyhle odkazy prosím nikomu neposílej.'),
-		links(
-			{ label: 'Prezenční listina', href: sheetUrl(env, row.view_token), intro: sheetIntro },
-			{ label: 'Změnit odpověď', href: answerUrl(env, row.token), intro: changeIntro },
-		),
-	];
+	const personal = (sheetIntro: string, changeIntro: string) => personalLinks(env, row.token, row.view_token, sheetIntro, changeIntro);
 	if (row.status === 'yes') {
 		return sendMail(env, row.email, 'Sraz gisáků: počítáme s tebou!', [
 			stamp('Zapsáno'),
