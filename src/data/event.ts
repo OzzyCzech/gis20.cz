@@ -26,11 +26,9 @@ export const event = {
 	// VŠB-TUO campus in Ostrava-Poruba, from OpenStreetMap (Nominatim).
 	schoolCoords: { lat: 49.83385, lon: 18.1647 } satisfies LatLon,
 
-	// RSVP form stores answers in a Google Form. Paste the form's pre-filled link
-	// (Google Forms → ⋮ → Get pre-filled link), with the "Jméno" question first
-	// and "Telefon" second, e.g.
-	// https://docs.google.com/forms/d/e/1FAIpQL.../viewform?usp=pp_url&entry.111=x&entry.222=y
-	rsvpFormLink: '',
+	// RSVP API served by the same Cloudflare Worker as the site (worker/src/index.ts), e.g. '/api'.
+	// Leave empty to hide the RSVP slip in production (hidden until confirmation e-mails work).
+	rsvpApi: '',
 	// Optional extras shown on the RSVP slip.
 	contactEmail: '',
 	contactPhone: '',
@@ -90,11 +88,3 @@ export function mapLinks({ lat, lon }: LatLon) {
 	};
 }
 
-/** Google Form endpoint and field names parsed from `rsvpFormLink`, or null if not set. */
-export function rsvpForm(): { action: string; name: string; phone: string } | null {
-	const link = event.rsvpFormLink.trim();
-	const id = link.match(/\/forms\/d\/e\/([^/]+)\//)?.[1];
-	const entries = [...link.matchAll(/[?&](entry\.\d+)=/g)].map((m) => m[1]);
-	if (!id || entries.length < 2) return null;
-	return { action: `https://docs.google.com/forms/d/e/${id}/formResponse`, name: entries[0], phone: entries[1] };
-}

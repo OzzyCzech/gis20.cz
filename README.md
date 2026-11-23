@@ -15,10 +15,10 @@ Built with Astro and Tailwind CSS v4.
 ## Editing content
 
 All event facts live in `src/data/event.ts`. Optional fields are hidden on the page until filled in.
-The RSVP slip (`src/components/RsvpSlip.astro`) posts name and phone to a Google Form.
-Create a form with two short-answer questions (Jméno, Telefon), open ⋮ → Get pre-filled link,
-fill in any values and paste the generated link into `rsvpFormLink`. Answers then show up in the
-form's responses (and a linked Google Sheet). Until the link is set, the slip renders only in dev.
+The RSVP slip (`src/components/RsvpSlip.astro`) talks to the Cloudflare Worker in `worker/` (URL in `rsvpApi`).
+Sign-up stores name, e-mail and an optional note in D1 and sends a confirmation e-mail (Resend) with a
+personal cancel link `https://gis20.cz/#odhlasit=<token>`; anyone who lost it can request a new one on the slip.
+The page only ever shows the head count. Without `rsvpApi` the slip renders only in dev.
 `rsvpDeadline`, `contactEmail`, `contactPhone` and `paymentInfo` are shown on the slip when filled.
 
 Coordinates in `venueCoords` are the wine cellar itself; they drive the map pin, the map links and the distance.
@@ -37,8 +37,20 @@ The whole page is a noticeboard: paper scraps lying on a fictional topographic m
 - `src/pages/sraz.ics.ts` – calendar file generated at build time (`/sraz.ics`)
 - `scripts/og-image.html` – source of the link preview image `public/og.png`; the regenerate command is in the file
 
-## Deploy
+## Hosting and RSVP backend
 
-Every push to `main` builds the site and deploys it to GitHub Pages (`.github/workflows/deploy.yml`).
-It is served at https://gis20.cz: the domain is set in the repository's Pages settings and in `public/CNAME`,
-and `site` in `astro.config.mjs` must match it.
+The whole site runs on Cloudflare as one Worker, `gis20` (config in `wrangler.jsonc`, code in `worker/src/index.ts`):
+it serves the Astro build from `dist/`, redirects www to the apex, adds an `X-Robots-Tag: noindex` header and
+answers the RSVP API under `/api/`. Registrations live in the D1 database `gis20-rsvp` (EU jurisdiction).
+DNS for gis20.cz is managed in the same Cloudflare account.
+
+```sh
+export CLOUDFLARE_ACCOUNT_ID=<account id>
+npm run deploy                                        # astro build + wrangler deploy
+npx wrangler secret put RESEND_API_KEY                # Resend API key for e-mails
+npx wrangler d1 execute gis20-rsvp --remote --file worker/schema.sql   # create the table (once)
+npx wrangler d1 execute gis20-rsvp --remote --command "SELECT name, email, phone, note, status, updated_at FROM registrations ORDER BY created_at"
+```
+
+Registrations can also be browsed in the Cloudflare dashboard (Storage & Databases → D1 → gis20-rsvp).
+E-mails are sent from `sraz@gis20.cz` through Resend; the domain is verified there via DNS records.

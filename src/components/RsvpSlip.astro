@@ -1,18 +1,25 @@
 ---
-import { event, rsvpForm } from '../data/event';
+import { event } from '../data/event';
 import Scrap from './Scrap.astro';
 
-// RSVP as a cut-out coupon. Answers go to a Google Form (see rsvpFormLink in event.ts).
-// Without a configured form the slip only renders in dev, so production never shows a dead form.
-const form = rsvpForm();
-const visible = Boolean(form) || import.meta.env.DEV;
+// RSVP as a cut-out coupon, backed by the Cloudflare Worker in /worker (see rsvpApi in event.ts).
+// Sign-up sends a confirmation e-mail with a personal cancel link (https://gis20.cz/#odhlasit=<token>).
+// Without a configured API the slip only renders in dev, so production never shows a dead form.
+const api = event.rsvpApi.trim().replace(/\/$/, '');
+const visible = Boolean(api) || import.meta.env.DEV;
+// Boxed inputs with dark labels: readable, clear borders (WCAG non-text contrast) and a visible focus ring.
+const label = 'block text-base font-semibold';
 const field =
-	'mt-1 block w-full border-0 border-b-2 border-dotted border-ink/60 bg-transparent px-1 py-1.5 font-hand text-2xl leading-tight outline-none focus:border-solid focus:border-water';
+	'mt-1.5 block w-full rounded-sm border-2 border-ink/70 bg-white px-3 py-2 text-lg leading-snug font-normal text-ink placeholder:text-ink-soft/70 focus:border-ink focus:outline-3 focus:outline-offset-1 focus:outline-water';
+const button =
+	'border-2 border-ink bg-ink px-5 py-2.5 font-cond text-lg font-semibold text-news transition-colors hover:border-trail hover:bg-trail disabled:opacity-60';
+const stamp =
+	'inline-block -rotate-6 border-4 border-double border-trail/80 px-5 py-2 font-cond text-2xl font-semibold tracking-wide text-trail/90 uppercase';
 ---
 
 {
 	visible && (
-		<section aria-labelledby="prihlaska" class="mt-24 flex justify-center">
+		<section id="prihlaska" aria-labelledby="prihlaska-nadpis" class="mt-24 flex scroll-mt-8 justify-center" data-rsvp-api={api}>
 			<Scrap
 				seed={30}
 				rotate={-1.2}
@@ -26,8 +33,8 @@ const field =
 					<p class="text-sm text-ink-soft italic" aria-hidden="true">
 						✂ zde odstřihněte
 					</p>
-					<h2 id="prihlaska" class="mt-2 text-[2rem] leading-tight font-bold">
-						Závazná přihláška
+					<h2 id="prihlaska-nadpis" class="mt-2 text-[2rem] leading-tight font-bold">
+						Přihláška
 					</h2>
 					<p class="mt-1 text-lg">
 						na sraz {event.start.d}.–{event.end.d}.&nbsp;{event.start.m}.&nbsp;{event.start.y}, {event.venue.toLowerCase()},{' '}
@@ -35,59 +42,99 @@ const field =
 					</p>
 					{event.rsvpDeadline && (
 						<p class="mt-2">
-							Přihlas se prosím do <strong>{event.rsvpDeadline}</strong>.
+							Přihlaste se prosím do <strong>{event.rsvpDeadline}</strong>.
 						</p>
 					)}
+					<p data-rsvp-count hidden class="mt-2 text-ink-soft">
+						Zatím přihlášeno: <strong class="text-ink" />
+					</p>
 
-					<form
-						data-rsvp
-						method="post"
-						action={form?.action}
-						class="mt-6 grid gap-5 sm:grid-cols-2"
-						autocomplete="on"
-					>
-						<label class="block">
-							<span class="text-sm text-ink-soft">Jméno a příjmení</span>
-							<input
-								class={field}
-								type="text"
-								name={form?.name ?? 'name'}
-								autocomplete="name"
-								required
-								maxlength="80"
-							/>
+					{/* Opened from the cancel link in the confirmation e-mail. */}
+					<div data-rsvp-cancel hidden class="mt-6">
+						<p class="text-lg">Opravdu se chcete ze srazu odhlásit?</p>
+						<p class="mt-4">
+							<button type="button" data-rsvp-cancel-confirm class={button}>
+								Ano, odhlásit
+							</button>
+						</p>
+					</div>
+					<div data-rsvp-cancelled hidden class="mt-6">
+						<p class={stamp}>Odhlášeno</p>
+						<p class="mt-4 text-lg">Škoda, budete chybět. Kdybyste si to rozmysleli, stačí se přihlásit znovu.</p>
+					</div>
+
+					<form data-rsvp-form class="mt-6 grid gap-x-5 gap-y-4 sm:grid-cols-2" autocomplete="on">
+						<label class:list={[label, 'sm:col-span-2']}>
+							Jméno a příjmení / přezdívka
+							<input class={field} type="text" name="name" autocomplete="name" required minlength="2" maxlength="80" />
 						</label>
-						<label class="block">
-							<span class="text-sm text-ink-soft">Telefon</span>
+						<label class={label}>
+							E-mail
+							<input class={field} type="email" name="email" autocomplete="email" inputmode="email" required maxlength="254" />
+						</label>
+						<label class={label}>
+							Telefon
 							<input
 								class={field}
 								type="tel"
-								name={form?.phone ?? 'phone'}
+								name="phone"
 								autocomplete="tel"
 								inputmode="tel"
-								pattern="[+0-9 ]{9,17}"
-								title="Telefonní číslo, např. 777 123 456 nebo +420 777 123 456"
 								required
+								pattern="[+0-9 ]{9,20}"
+								title="Telefonní číslo, např. 777 123 456 nebo +420 777 123 456"
 							/>
 						</label>
-						<div class="flex flex-wrap items-center gap-x-5 gap-y-3 sm:col-span-2">
-							<button
-								type="submit"
-								class="border-2 border-ink bg-ink px-5 py-2.5 font-cond text-lg font-semibold text-news transition-colors hover:border-trail hover:bg-trail disabled:opacity-60"
-							>
+						<div class="sm:col-span-2">
+							<label for="rsvp-note" class={label}>
+								Poznámka <span class="font-normal text-ink-soft">(nepovinné)</span>
+							</label>
+							<p id="rsvp-note-hint" class="text-sm text-ink-soft">Strava, nocleh, spolujízda nebo cokoliv dalšího, co nám chcete napsat.</p>
+							<textarea id="rsvp-note" class:list={[field, 'resize-y']} name="note" rows="3" maxlength="500" aria-describedby="rsvp-note-hint" />
+						</div>
+						{/* Honeypot for bots, hidden from people and screen readers. */}
+						<label class="absolute -left-[9999px]" aria-hidden="true">
+							Nevyplňujte
+							<input type="text" name="hp_check" tabindex="-1" autocomplete="off" />
+						</label>
+						<div class="flex flex-wrap items-center gap-x-5 gap-y-3 pt-1 sm:col-span-2">
+							<button type="submit" class={button}>
 								Potvrdit účast
 							</button>
-							<p class="text-xs text-ink-soft">Jméno a telefon použijeme jen pro organizaci srazu.</p>
+							<p class="text-sm text-ink-soft">Údaje použijeme jen pro organizaci srazu.</p>
 						</div>
 					</form>
 
 					<div data-rsvp-done hidden class="mt-6">
-						<p class="inline-block -rotate-6 border-4 border-double border-trail/80 px-5 py-2 font-cond text-2xl font-semibold tracking-wide text-trail/90 uppercase">
-							Zapsáno
+						<p class={stamp}>Zapsáno</p>
+						<p class="mt-4 text-lg">Díky, počítáme s vámi! Uvidíme se ve sklepě.</p>
+						<p data-rsvp-mailed class="mt-2 text-sm text-ink-soft">
+							Na e-mail přišlo potvrzení s odkazem, přes který se dá případně odhlásit.
 						</p>
-						<p class="mt-4 text-lg">Díky, počítáme s tebou! Uvidíme se ve sklepě.</p>
+						<p data-rsvp-unmailed hidden class="mt-2 text-sm text-ink-soft">
+							Potvrzovací e-mail se teď nepodařilo odeslat, přihláška je ale zapsaná. Odkaz na odhlášení si můžete kdykoliv nechat poslat níže.
+						</p>
 					</div>
-					<p data-rsvp-error hidden class="mt-4 font-semibold text-trail" role="alert"></p>
+
+					<details data-rsvp-lost class="mt-6">
+						<summary class="cursor-pointer underline decoration-1 underline-offset-4">
+							Nakonec to nevyjde? Pošleme odkaz na odhlášení
+						</summary>
+						<form data-rsvp-link-form class="mt-3 flex flex-wrap items-end gap-4">
+							<label class:list={[label, 'min-w-56 flex-1']}>
+								E-mail, se kterým jste se přihlásili
+								<input class={field} type="email" name="email" autocomplete="email" inputmode="email" required maxlength="254" />
+							</label>
+							<button type="submit" class="border-2 border-ink px-4 py-2.5 font-cond text-lg font-semibold transition-colors hover:bg-ink hover:text-news disabled:opacity-60">
+								Poslat odkaz
+							</button>
+						</form>
+						<p data-rsvp-link-sent hidden class="mt-3">
+							Pokud je e-mail přihlášený, přišel na něj odkaz na odhlášení.
+						</p>
+					</details>
+
+					<p data-rsvp-error hidden class="mt-4 font-semibold text-trail" role="alert" />
 
 					{(event.contactEmail || event.contactPhone) && (
 						<p class="mt-6 border-t border-ink/20 pt-3 text-sm text-ink-soft">
@@ -113,35 +160,101 @@ const field =
 }
 
 <script>
-	const form = document.querySelector<HTMLFormElement>('[data-rsvp]');
-	const done = document.querySelector<HTMLElement>('[data-rsvp-done]');
-		const error = document.querySelector<HTMLElement>('[data-rsvp-error]');
+	const root = document.querySelector<HTMLElement>('[data-rsvp-api]');
+	if (root) setup(root);
 
-	form?.addEventListener('submit', async (e) => {
-		e.preventDefault();
-		if (!form.reportValidity()) return;
-		error!.hidden = true;
+	function setup(root: HTMLElement) {
+		const api = root.dataset.rsvpApi ?? '';
+		const $ = <T extends HTMLElement>(name: string) => root.querySelector<T>(`[data-rsvp-${name}]`)!;
+		const form = $<HTMLFormElement>('form');
+		const error = $('error');
+		const countLine = $('count');
 
-		const action = form.getAttribute('action');
-		if (!action) {
-			error!.textContent = 'Formulář zatím není napojený na Google Formulář (vidíš to jen při vývoji).';
-			error!.hidden = false;
-			return;
+		const show = (el: HTMLElement, on = true) => (el.hidden = !on);
+		const fail = (message: string) => {
+			error.textContent = message;
+			show(error);
+		};
+		const setCount = (n: unknown) => {
+			if (typeof n !== 'number') return;
+			countLine.querySelector('strong')!.textContent = String(n);
+			show(countLine, n > 0);
+		};
+
+		async function call(path: string, body?: object) {
+			if (!api) throw new Error('Přihláška zatím není napojená na server (vidíte to jen při vývoji).');
+			const response = await fetch(api + path, body ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : {});
+			const data = await response.json().catch(() => ({}));
+			if (!response.ok) throw new Error(data.error ?? 'Něco se pokazilo, zkuste to prosím později.');
+			return data;
 		}
+		const offline = 'Nepodařilo se spojit se serverem. Zkontrolujte připojení k internetu a zkuste to znovu.';
+		const message = (e: unknown) => (e instanceof TypeError ? offline : e instanceof Error ? e.message : offline);
 
-		const button = form.querySelector<HTMLButtonElement>('button[type=submit]')!;
-		button.disabled = true;
-		const data = new FormData(form);
-		try {
-			// Google Forms sends no CORS headers: the response is opaque, so a resolved
-			// request is the best success signal available.
-			await fetch(action, { method: 'POST', mode: 'no-cors', body: new URLSearchParams(data as unknown as Record<string, string>) });
-			form.hidden = true;
-			done!.hidden = false;
-		} catch {
-			error!.textContent = 'Přihlášku se nepodařilo odeslat. Zkontroluj připojení k internetu a zkus to znovu.';
-			error!.hidden = false;
-			button.disabled = false;
+		call('/count')
+			.then((data) => setCount(data.count))
+			.catch(() => {});
+
+		form.addEventListener('submit', async (e) => {
+			e.preventDefault();
+			if (!form.reportValidity()) return;
+			show(error, false);
+			const button = form.querySelector<HTMLButtonElement>('button[type=submit]')!;
+			button.disabled = true;
+			try {
+				const data = await call('/register', Object.fromEntries(new FormData(form)));
+				show(form, false);
+				show($('lost'), data.mailed === false);
+				show($('mailed'), data.mailed !== false);
+				show($('unmailed'), data.mailed === false);
+				show($('done'));
+				setCount(data.count);
+			} catch (err) {
+				fail(message(err));
+				button.disabled = false;
+			}
+		});
+
+		const linkForm = $<HTMLFormElement>('link-form');
+		linkForm.addEventListener('submit', async (e) => {
+			e.preventDefault();
+			if (!linkForm.reportValidity()) return;
+			show(error, false);
+			const button = linkForm.querySelector<HTMLButtonElement>('button')!;
+			button.disabled = true;
+			try {
+				await call('/cancel-link', Object.fromEntries(new FormData(linkForm)));
+				show(linkForm, false);
+				show($('link-sent'));
+			} catch (err) {
+				fail(message(err));
+				button.disabled = false;
+			}
+		});
+
+		// Cancel link from the e-mail: https://gis20.cz/#odhlasit=<token>
+		const token = location.hash.match(/^#odhlasit=([a-f0-9]{16,64})$/)?.[1];
+		if (token) {
+			show(form, false);
+			show($('lost'), false);
+			show($('cancel'));
+			root.scrollIntoView();
+			$<HTMLButtonElement>('cancel-confirm').addEventListener('click', async (e) => {
+				const button = e.currentTarget as HTMLButtonElement;
+				button.disabled = true;
+				show(error, false);
+				try {
+					const data = await call('/cancel', { token });
+					history.replaceState(null, '', location.pathname + location.search);
+					show($('cancel'), false);
+					show($('cancelled'));
+					show(form);
+					setCount(data.count);
+				} catch (err) {
+					fail(message(err));
+					button.disabled = false;
+				}
+			});
 		}
-	});
+	}
 </script>
