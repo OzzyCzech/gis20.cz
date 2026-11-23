@@ -18,8 +18,8 @@ const project = ({ lat, lon }: LatLon) => ({
 });
 
 const school = project(event.schoolCoords);
-const town = project(event.townCoords);
-const km = Math.round(distanceKm(event.schoolCoords, event.townCoords));
+const town = project(event.venueCoords);
+const km = Math.round(distanceKm(event.schoolCoords, event.venueCoords));
 const mid = { x: (school.x + town.x) / 2, y: (school.y + town.y) / 2 };
 const rawAngle = (Math.atan2(town.y - school.y, town.x - school.x) * 180) / Math.PI;
 // Keep the distance label upright regardless of line direction.
@@ -29,7 +29,7 @@ const angle = rawAngle > 90 ? rawAngle - 180 : rawAngle < -90 ? rawAngle + 180 :
 const drunkPoints = drunkRoute.map(([x, y]) => `${x},${y}`).join(' ');
 const drunkLen = drunkRoute.slice(1).reduce((sum, [x, y], i) => sum + Math.hypot(x - drunkRoute[i][0], y - drunkRoute[i][1]), 0);
 // Same km-per-pixel ratio as the straight route, so both labels agree.
-const drunkKm = Math.round((drunkLen / Math.hypot(school.x - town.x, school.y - town.y)) * distanceKm(event.schoolCoords, event.townCoords));
+const drunkKm = Math.round((drunkLen / Math.hypot(school.x - town.x, school.y - town.y)) * distanceKm(event.schoolCoords, event.venueCoords));
 // Label spots picked at the route's turning points.
 const backLabel = drunkRoute[128];
 const lost = drunkRoute[77];

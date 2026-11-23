@@ -21,7 +21,7 @@ fill in any values and paste the generated link into `rsvpFormLink`. Answers the
 form's responses (and a linked Google Sheet). Until the link is set, the slip renders only in dev.
 `rsvpDeadline`, `contactEmail`, `contactPhone` and `paymentInfo` are shown on the slip when filled.
 
-Coordinates in `townCoords` are the village centre, not the cellar; they drive the map pin and map links.
+Coordinates in `venueCoords` are the wine cellar itself; they drive the map pin, the map links and the distance.
 
 ## Structure
 

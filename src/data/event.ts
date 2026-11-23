@@ -21,8 +21,8 @@ export const event = {
 	price: 1100,
 	priceIncludes: 'víno + jídlo',
 
-	// Municipality centroid from OpenStreetMap (Nominatim), not the cellar itself.
-	townCoords: { lat: 48.858608, lon: 17.028585 } satisfies LatLon,
+	// The wine cellar itself (Mapy.com).
+	venueCoords: { lat: 48.8625189, lon: 17.0220803 } satisfies LatLon,
 	// VŠB-TUO campus in Ostrava-Poruba, from OpenStreetMap (Nominatim).
 	schoolCoords: { lat: 49.83385, lon: 18.1647 } satisfies LatLon,
 
@@ -85,8 +85,8 @@ export function formatCoord(value: number, axis: 'lat' | 'lon', digits = 4): str
 
 export function mapLinks({ lat, lon }: LatLon) {
 	return {
-		mapy: `https://mapy.com/fnc/v1/showmap?mapset=outdoor&center=${lon},${lat}&zoom=13&marker=true`,
-		osm: `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=13/${lat}/${lon}`,
+		mapy: `https://mapy.com/fnc/v1/showmap?mapset=outdoor&center=${lon},${lat}&zoom=17&marker=true`,
+		osm: `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=17/${lat}/${lon}`,
 	};
 }
 

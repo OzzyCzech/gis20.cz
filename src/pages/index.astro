@@ -24,10 +24,10 @@ const dateRange = formatDateRange();
 const dateRangeLong = formatDateRangeLong();
 const weekdays = formatWeekdays().replace('–', ' a ');
 const price = formatCzk(event.price);
-const { lat, lon } = event.townCoords;
+const { lat, lon } = event.venueCoords;
 const coords = `${formatCoord(lat, 'lat')}, ${formatCoord(lon, 'lon')}`;
-const links = mapLinks(event.townCoords);
-const km = Math.round(distanceKm(event.schoolCoords, event.townCoords));
+const links = mapLinks(event.venueCoords);
+const km = Math.round(distanceKm(event.schoolCoords, event.venueCoords));
 
 const title = `${event.title}, ${dateRange}`;
 const description = `Pozvánka na sraz absolventů oboru ${event.field} z VŠB-TUO ${event.yearsSince} let od promocí: ${dateRangeLong}, vinný sklep v Dolních Bojanovicích, ${price} za víno a jídlo.`;
@@ -162,7 +162,7 @@ const button =
 					Sejdeme se ve vinném sklepě v Dolních Bojanovicích. Z Ostravy je to vzdušnou čarou asi {km}&nbsp;km. Po silnici to
 					bude víc, ale trasu si jako gisáci spočítá každý sám.
 				</p>
-				<p class="mt-4 text-sm text-ink-soft">Souřadnice obce: <span class="font-mono">{coords}</span></p>
+				<p class="mt-4 text-sm text-ink-soft">Souřadnice sklepa: <span class="font-mono">{coords}</span></p>
 				<p class="mt-4 flex flex-wrap gap-3">
 					<a href={links.mapy} target="_blank" rel="noopener" class={button}>Otevřít v Mapy.com</a>
 					<a href={links.osm} target="_blank" rel="noopener" class={button}>OpenStreetMap</a>
