@@ -1,7 +1,8 @@
 // The whole gis20.cz site: static Astro build (ASSETS) plus the RSVP API under /api/
-// (sign up, cancel via a link from the confirmation e-mail, public head count).
+// (answer coming / not coming, cancel via a link from the confirmation e-mail, head count, attendance sheet).
 // Data lives in D1 (see ../schema.sql); e-mails go out through Resend.
-// The API is public, so it only ever returns a count, never names or addresses.
+// Publicly the API only returns a count. Names are listed only for a registrant's personal sheet link,
+// and e-mail addresses, phones and notes never leave the database.
 
 interface D1Result<T> {
 	results: T[];
@@ -34,7 +35,8 @@ interface Env {
 	ALLOWED_ORIGINS: string;
 }
 
-type Registration = { id: number; email: string; name: string; status: 'yes' | 'no'; token: string };
+type Status = 'yes' | 'no';
+type Registration = { id: number; email: string; name: string; status: Status; token: string; view_token: string | null };
 
 const EVENT = {
 	when: '19.–20. června 2027',
@@ -109,6 +111,7 @@ async function api(request: Request, env: Env, pathname: string): Promise<Respon
 			if (pathname === '/register') return json(...(await register(env, data)));
 			if (pathname === '/cancel') return json(...(await cancel(env, data)));
 			if (pathname === '/cancel-link') return json(...(await cancelLink(env, data)));
+			if (pathname === '/attendees') return json(...(await attendees(env, data)));
 		}
 		return json({ error: 'Nenalezeno.' }, 404);
 	} catch (error) {
@@ -128,6 +131,7 @@ async function readJson(request: Request): Promise<Record<string, unknown> | nul
 
 const text = (value: unknown, max: number) => (typeof value === 'string' ? value.trim().slice(0, max) : '');
 const now = () => new Date().toISOString();
+const newToken = () => crypto.randomUUID().replace(/-/g, '');
 
 async function count(env: Env): Promise<number> {
 	const row = await env.DB.prepare("SELECT COUNT(*) AS n FROM registrations WHERE status = 'yes'").first<{ n: number }>();
@@ -135,56 +139,84 @@ async function count(env: Env): Promise<number> {
 }
 
 async function findByEmail(env: Env, email: string) {
-	return env.DB.prepare('SELECT id, email, name, status, token FROM registrations WHERE email = ?').bind(email).first<Registration>();
+	return env.DB.prepare('SELECT id, email, name, status, token, view_token FROM registrations WHERE email = ?').bind(email).first<Registration>();
 }
 
 async function register(env: Env, data: Record<string, unknown>): Promise<[unknown, number]> {
 	// Honeypot: humans never see the field, bots fill it in. Pretend success.
 	if (text(data.hp_check, 200)) return [{ ok: true, mailed: false }, 200];
 
+	const status: Status = data.attending === 'no' ? 'no' : 'yes';
 	const name = text(data.name, 80);
 	const email = text(data.email, 254).toLowerCase();
 	const phone = text(data.phone, 24);
 	const note = text(data.note, 500);
 	if (name.length < 2) return [{ error: 'Vyplňte prosím jméno.' }, 400];
-	// The name ends up in the e-mail body; keep links and markup out of it.
+	// The name ends up in e-mails and on the attendance sheet; keep links and markup out of it.
 	if (/https?:|www\.|[<>/@]/i.test(name)) return [{ error: 'Jméno obsahuje nepovolené znaky.' }, 400];
 	if (!EMAIL_RE.test(email)) return [{ error: 'Zkontrolujte prosím e-mail.' }, 400];
 	if (!PHONE_RE.test(phone.replace(/[\s()-]/g, ''))) return [{ error: 'Zkontrolujte prosím telefon.' }, 400];
 
 	const existing = await findByEmail(env, email);
 	let token: string;
+	let viewToken: string;
 	if (existing) {
 		token = existing.token;
-		await env.DB.prepare("UPDATE registrations SET name = ?, phone = ?, note = ?, status = 'yes', updated_at = ?, cancelled_at = NULL WHERE id = ?")
-			.bind(name, phone, note, now(), existing.id)
+		viewToken = existing.view_token ?? newToken();
+		await env.DB.prepare(
+			'UPDATE registrations SET name = ?, phone = ?, note = ?, status = ?, view_token = ?, updated_at = ?, cancelled_at = NULL WHERE id = ?',
+		)
+			.bind(name, phone, note, status, viewToken, now(), existing.id)
 			.run();
 	} else {
-		token = crypto.randomUUID().replace(/-/g, '');
+		token = newToken();
+		viewToken = newToken();
 		const at = now();
-		await env.DB.prepare("INSERT INTO registrations (email, name, phone, note, status, token, created_at, updated_at) VALUES (?, ?, ?, ?, 'yes', ?, ?, ?)")
-			.bind(email, name, phone, note, token, at, at)
+		await env.DB.prepare(
+			'INSERT INTO registrations (email, name, phone, note, status, token, view_token, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+		)
+			.bind(email, name, phone, note, status, token, viewToken, at, at)
 			.run();
 	}
 
-	// The cancel token only ever travels by e-mail, so knowing someone's address is not enough to cancel them.
-	const mailed = await sendMail(env, email, 'Sraz gisáků: počítáme s tebou!', [
-		'Ahoj,',
-		'',
-		`paráda, že dorazíš! Přihlášku máme zapsanou pod jménem ${name}.`,
-		'',
-		`Uvidíme se ${EVENT.when} ${EVENT.where}. Po dvaceti letech bude co probírat.`,
-		'',
-		`Termín si ulož do kalendáře: ${new URL('sraz.ics', env.SITE_URL)}`,
-		`Všechno ostatní najdeš na ${env.SITE_URL}`,
-		'',
-		'Kdyby se ti do toho nakonec něco připletlo, odhlásit se můžeš tady:',
-		cancelUrl(env, token),
-		'',
-		'Těšíme se na tebe!',
-		SIGNATURE,
-	]);
-	return [{ ok: true, mailed, count: await count(env) }, 200];
+	// Both links only ever travel by e-mail, so knowing someone's address is not enough to cancel them or to read the sheet.
+	const sheet = [
+		status === 'yes' ? 'Kdo další přijede, uvidíš na prezenční listině:' : 'Kdo přijede, uvidíš na prezenční listině:',
+		sheetUrl(env, viewToken),
+		'(Odkaz je jen pro tebe, nikomu ho prosím neposílej.)',
+	];
+	const mailed =
+		status === 'yes'
+			? await sendMail(env, email, 'Sraz gisáků: počítáme s tebou!', [
+					'Ahoj,',
+					'',
+					`paráda, že dorazíš! Přihlášku máme zapsanou pod jménem ${name}.`,
+					'',
+					`Uvidíme se ${EVENT.when} ${EVENT.where}. Po dvaceti letech bude co probírat.`,
+					'',
+					`Termín si ulož do kalendáře: ${new URL('sraz.ics', env.SITE_URL)}`,
+					`Všechno ostatní najdeš na ${env.SITE_URL}`,
+					'',
+					...sheet,
+					'',
+					'Kdyby se ti do toho nakonec něco připletlo, odhlásit se můžeš tady:',
+					cancelUrl(env, token),
+					'',
+					'Těšíme se na tebe!',
+					SIGNATURE,
+				])
+			: await sendMail(env, email, 'Sraz gisáků: škoda, že to nevyjde', [
+					'Ahoj,',
+					'',
+					`díky za odpověď. Škoda, že to nevyjde, budeš chybět! Omluvenku máme zapsanou pod jménem ${name}.`,
+					'',
+					...sheet,
+					'',
+					`Kdyby se to změnilo, stačí na ${env.SITE_URL} vyplnit přihlášku znovu se stejným e-mailem.`,
+					'',
+					SIGNATURE,
+				]);
+	return [{ ok: true, mailed, status, count: await count(env) }, 200];
 }
 
 async function cancel(env: Env, data: Record<string, unknown>): Promise<[unknown, number]> {
@@ -223,7 +255,23 @@ async function cancelLink(env: Env, data: Record<string, unknown>): Promise<[unk
 	return [{ ok: true }, 200];
 }
 
-const cancelUrl = (env: Env, token: string) => `${new URL(env.SITE_URL).origin}/#odhlasit=${token}`;
+async function attendees(env: Env, data: Record<string, unknown>): Promise<[unknown, number]> {
+	const token = text(data.token, 64);
+	const viewer = token ? await env.DB.prepare('SELECT id FROM registrations WHERE view_token = ?').bind(token).first<{ id: number }>() : null;
+	if (!viewer) return [{ error: 'Odkaz na prezenční listinu není platný.' }, 404];
+
+	const { results } = await env.DB.prepare('SELECT id, name, status FROM registrations ORDER BY created_at, id').all<{
+		id: number;
+		name: string;
+		status: Status;
+	}>();
+	// Names and answers only; the viewer's own row is flagged so the sheet can highlight it.
+	return [{ people: results.map((row) => ({ name: row.name, coming: row.status === 'yes', you: row.id === viewer.id })) }, 200];
+}
+
+const origin = (env: Env) => new URL(env.SITE_URL).origin;
+const cancelUrl = (env: Env, token: string) => `${origin(env)}/#odhlasit=${token}`;
+const sheetUrl = (env: Env, token: string) => `${origin(env)}/#listina=${token}`;
 
 async function sendMail(env: Env, to: string, subject: string, lines: string[]): Promise<boolean> {
 	if (!env.RESEND_API_KEY) {

@@ -48,10 +48,16 @@ DNS for gis20.cz is managed in the same Cloudflare account.
 export CLOUDFLARE_ACCOUNT_ID=<account id>
 npm run deploy                                        # astro build + wrangler deploy
 npx wrangler dev                                      # local Worker + API on :8787 (npm run dev proxies /api there)
+npx wrangler d1 execute gis20-rsvp --local --file worker/schema.sql    # local database for wrangler dev (once)
 npx wrangler secret put RESEND_API_KEY                # Resend API key for e-mails
 npx wrangler d1 execute gis20-rsvp --remote --file worker/schema.sql   # create the table (once)
+npx wrangler d1 execute gis20-rsvp --remote --file worker/migrations/0001_view_token.sql  # only for a database created before it
 npx wrangler d1 execute gis20-rsvp --remote --command "SELECT name, email, phone, note, status, updated_at FROM registrations ORDER BY created_at"
 ```
+
+Guests answer "Přijedu" or "Nepřijedu". The confirmation e-mail has a personal link to the attendance sheet
+(`/#listina=<token>`, names and answers only) and, for those coming, a cancel link (`/#odhlasit=<token>`).
+The two tokens are separate, so a forwarded sheet link can't cancel anyone. Publicly the site shows only the head count.
 
 Registrations can also be browsed in the Cloudflare dashboard (Storage & Databases → D1 → gis20-rsvp).
 E-mails are sent from `sraz@gis20.cz` through Resend; the domain is verified there via DNS records.
