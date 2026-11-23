@@ -38,8 +38,9 @@ const button =
 ---
 
 <Base title={title} description={description}>
-	<main class="mx-auto max-w-6xl overflow-x-clip px-4 pt-10 pb-16 sm:px-6 lg:pt-16">
-		<div class="grid items-start gap-x-10 gap-y-14 lg:grid-cols-12">
+	<!-- The front page keeps the footer's width (max-w-6xl minus padding); the archive below uses the full width. -->
+	<main class="overflow-x-clip px-4 pt-10 pb-16 sm:px-6 lg:pt-16">
+		<div class="mx-auto grid max-w-[69rem] items-start gap-x-10 gap-y-14 lg:grid-cols-12">
 			<!-- Front page of a made-up newspaper: the invitation itself -->
 			<Scrap
 				seed={1}
