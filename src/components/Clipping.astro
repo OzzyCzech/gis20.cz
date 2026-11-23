@@ -116,7 +116,7 @@ const photo = c.image && Object.entries(photos).find(([path]) => path.endsWith(`
 					<figure class="mt-3 -rotate-1 border border-ink/30 bg-receipt px-4 py-3 font-mono text-[0.8125rem] leading-snug shadow-sm">
 						{c.facsimile.from && <p class="text-ink-soft">Od: {c.facsimile.from}</p>}
 						<p class="text-ink-soft">Předmět: {c.facsimile.subject}</p>
-						<div class="mt-3 text-base font-bold">
+						<div class="mt-3 text-base">
 							{c.facsimile.text.map((line) => (line ? <p>{line}</p> : <p aria-hidden="true">&nbsp;</p>))}
 						</div>
 					</figure>

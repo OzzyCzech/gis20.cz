@@ -77,7 +77,7 @@ export const clippings: Clipping[] = [
 		kicker: 'Černá kronika',
 		headline: 'Shořely mu boty!',
 		body: 'Poškozený musel zhruba dvoukilometrovou cestu absolvovat bos. Pachatel zůstává neznámý, vyšetřování komplikuje nedostatek střízlivých svědků.',
-		footer: 'P.... plus deset.',
+		footer: 'P...a plus deset.',
 		art: 'fire',
 	},
 	{
@@ -115,7 +115,7 @@ export const clippings: Clipping[] = [
 		kicker: 'Věda',
 		headline: 'Vysočiny mám po krk!',
 		body: 'Salám Vysočina se stal neoficiální měrnou jednotkou hloubky. Sérií praktických pokusů bylo zjištěno, kam až je možné zajít. Výsledky se mezi jednotlivci výrazně lišily.',
-		footer: 'Hodí se k ArcView nebo pivu.',
+		footer: 'Hlavně nepolykat!',
 		image: {
 			file: 'salam-vysocina.jpg',
 			alt: 'Salám Vysočina s odkrojenými plátky',
@@ -127,6 +127,6 @@ export const clippings: Clipping[] = [
 		kicker: 'Černá kronika',
 		headline: 'Nechal otevřeno',
 		body: 'Student oslavil Den dětí otevřenými dveřmi učebny J339. Neznámý pachatel příležitosti využil a odnesl si na oslavu projektor za 60 tisíc korun.',
-		footer: 'Tak to jsem v prdeli.',
+		footer: 'Hej, tak to jsem v prdeli.',
 	},
 ];
