@@ -1,6 +1,8 @@
 // Generates real isolines (marching squares) over a synthetic terrain,
 // so the page background looks like an actual topographic map sheet.
 
+import type { Pub, PubKind } from '../data/pubs';
+
 type Point = [number, number];
 
 export type MapOptions = {
@@ -8,6 +10,14 @@ export type MapOptions = {
 	cell: number;
 	levels: number;
 	indexEvery: number; // every n-th line is a thicker "index contour"
+	pubs?: Pub[];
+};
+
+// Map symbols centred on 0,0: beer mug, cocktail glass, hut.
+const SYMBOLS: Record<PubKind, string> = {
+	pub: '<rect x="-4.5" y="-5" width="7" height="10" rx="1"/><path d="M2.5-2.5h1.5a1.7 1.7 0 0 1 1.7 1.7v1.6a1.7 1.7 0 0 1-1.7 1.7H2.5" fill="none" stroke="#7a5a3c" stroke-width="1.5"/>',
+	bar: '<path d="M-5-5h10l-4.3 5v4h2.8v1.4h-7v-1.4h2.8v-4z"/>',
+	hut: '<path d="M-6 0.5 0-5.5l6 6h-1.5v5h-9v-5z"/>',
 };
 
 // Hill centres and noise are periodic over the unit square, so the generated
@@ -152,7 +162,7 @@ function toPath(line: Point[]): string {
  * Seamless tile of a fictional topographic map: forest on hilltops (closed
  * isolines), contours, a river, a road, a hiking trail, km grid and spot heights.
  */
-export function mapSvg({ size, cell, levels, indexEvery }: MapOptions): string {
+export function mapSvg({ size, cell, levels, indexEvery, pubs = [] }: MapOptions): string {
 	const grid: number[][] = [];
 	let min = Infinity;
 	let max = -Infinity;
@@ -201,6 +211,13 @@ export function mapSvg({ size, cell, levels, indexEvery }: MapOptions): string {
 		return `<path d="M${x} ${y - 6}l5 8h-10z"/><text x="${x + 8}" y="${y + 4}">${metres}</text>`;
 	});
 
+	// Muted brown with a paper-coloured halo: readable over contours, but quieter than the page content.
+	const pois = pubs.map(({ name, kind, x, y }) => {
+		const px = fmt(x * size);
+		const py = fmt(y * size);
+		return `<g transform="translate(${px} ${py})">${SYMBOLS[kind]}</g><text x="${fmt(x * size + 10)}" y="${fmt(y * size + 4.5)}">${name}</text>`;
+	});
+
 	return [
 		`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}">`,
 		`<rect width="${size}" height="${size}" fill="#edead8"/>`,
@@ -216,6 +233,9 @@ export function mapSvg({ size, cell, levels, indexEvery }: MapOptions): string {
 		`<path d="${trail}" stroke="#c8332f" stroke-width="2.2" stroke-dasharray="10 7"/>`,
 		`</g>`,
 		`<g font-family="ui-monospace, Menlo, monospace" font-size="12" fill="#6b4a2b">${peaks.join('')}</g>`,
+		`<g font-family="Georgia, 'Times New Roman', serif" font-size="13" font-style="italic" fill="#7a5a3c" stroke-linejoin="round" opacity="0.8">`,
+		`<g stroke="#edead8" stroke-width="3" paint-order="stroke">${pois.join('')}</g>`,
+		`</g>`,
 		`</svg>`,
 	].join('');
 }
