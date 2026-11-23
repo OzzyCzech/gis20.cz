@@ -35,6 +35,7 @@ const description = `Pozvánka na sraz absolventů oboru ${event.field} z VŠB-T
 
 const button =
 	'inline-block border-2 border-ink px-4 py-2 font-cond text-lg font-semibold leading-tight transition-colors hover:bg-ink hover:text-news';
+const inlineLink = 'underline decoration-1 underline-offset-4 transition-colors hover:text-trail';
 ---
 
 <Base title={title} description={description}>
@@ -50,10 +51,6 @@ const button =
 				innerClass="@container px-5 pt-7 pb-9 sm:px-9 sm:pt-9 sm:pb-11"
 			>
 				<header>
-					<div class="flex justify-between border-b border-ink pb-1 text-xs italic sm:text-sm">
-						<span>Ročník XX</span>
-						<span>Mimořádné vydání</span>
-					</div>
 					<p class="py-2 text-center text-[clamp(2.1rem,9vw,3.75rem)] leading-none font-extrabold tracking-tight">
 						Gisácký sraz
 					</p>
@@ -67,8 +64,11 @@ const button =
 					Sraz po {event.yearsSince}&nbsp;letech
 				</h1>
 				<p class="mt-5 max-w-[34ch] text-xl leading-snug italic sm:text-2xl">
-					Po dvaceti letech se ročník geoinformatiky z ostravské VŠB znovu protne v jednom bodě: ve vinném sklepě v Dolních
-					Bojanovicích, <span class="whitespace-nowrap">{dateRangeLong}</span>.
+					Po dvaceti letech se ročník geoinformatiky z ostravské VŠB znovu protne v jednom bodě: ve vinném sklepě v{' '}
+					<a href={links.mapy} target="_blank" rel="noopener" title="Ukázat na mapě" class={inlineLink}>Dolních Bojanovicích</a>,{' '}
+					<a href="/sraz.ics" download="sraz-gisaku-2027.ics" title="Uložit do kalendáře" class:list={[inlineLink, 'whitespace-nowrap']}
+						>{dateRangeLong}</a
+					>.
 				</p>
 
 				<div class="mt-7 border-t border-ink/60 pt-5">
