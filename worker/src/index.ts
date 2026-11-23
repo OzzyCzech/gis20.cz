@@ -1,5 +1,5 @@
 // The whole gis20.cz site: static Astro build (ASSETS) plus the RSVP API under /api/
-// (answer coming / not coming, cancel via a link from the confirmation e-mail, head count, attendance sheet).
+// (answer coming / not coming, change the answer via a personal link, head count, attendance sheet).
 // Data lives in D1 (see ../schema.sql); e-mails go out through Resend.
 // Publicly the API only returns a count. Names are listed only for a registrant's personal sheet link,
 // and e-mail addresses, phones and notes never leave the database.
@@ -109,8 +109,8 @@ async function api(request: Request, env: Env, pathname: string): Promise<Respon
 			const data = await readJson(request);
 			if (!data) return json({ error: 'Neplatný požadavek.' }, 400);
 			if (pathname === '/register') return json(...(await register(env, data)));
-			if (pathname === '/cancel') return json(...(await cancel(env, data)));
-			if (pathname === '/cancel-link') return json(...(await cancelLink(env, data)));
+			if (pathname === '/answer') return json(...(await answer(env, data)));
+			if (pathname === '/answer-link') return json(...(await answerLink(env, data)));
 			if (pathname === '/attendees') return json(...(await attendees(env, data)));
 		}
 		return json({ error: 'Nenalezeno.' }, 404);
@@ -179,80 +179,95 @@ async function register(env: Env, data: Record<string, unknown>): Promise<[unkno
 			.run();
 	}
 
-	// Both links only ever travel by e-mail, so knowing someone's address is not enough to cancel them or to read the sheet.
-	const sheet = [
-		status === 'yes' ? 'Kdo další přijede, uvidíš na prezenční listině:' : 'Kdo přijede, uvidíš na prezenční listině:',
-		sheetUrl(env, viewToken),
-		'(Odkaz je jen pro tebe, nikomu ho prosím neposílej.)',
-	];
-	const mailed =
-		status === 'yes'
-			? await sendMail(env, email, 'Sraz gisáků: počítáme s tebou!', [
-					'Ahoj,',
-					'',
-					`paráda, že dorazíš! Přihlášku máme zapsanou pod jménem ${name}.`,
-					'',
-					`Uvidíme se ${EVENT.when} ${EVENT.where}. Po dvaceti letech bude co probírat.`,
-					'',
-					`Termín si ulož do kalendáře: ${new URL('sraz.ics', env.SITE_URL)}`,
-					`Všechno ostatní najdeš na ${env.SITE_URL}`,
-					'',
-					...sheet,
-					'',
-					'Kdyby se ti do toho nakonec něco připletlo, odhlásit se můžeš tady:',
-					cancelUrl(env, token),
-					'',
-					'Těšíme se na tebe!',
-					SIGNATURE,
-				])
-			: await sendMail(env, email, 'Sraz gisáků: škoda, že to nevyjde', [
-					'Ahoj,',
-					'',
-					`díky za odpověď. Škoda, že to nevyjde, budeš chybět! Omluvenku máme zapsanou pod jménem ${name}.`,
-					'',
-					...sheet,
-					'',
-					`Kdyby se to změnilo, stačí na ${env.SITE_URL} vyplnit přihlášku znovu se stejným e-mailem.`,
-					'',
-					SIGNATURE,
-				]);
+	const mailed = await sendAnswerMail(env, { email, name, status, token, view_token: viewToken });
 	return [{ ok: true, mailed, status, count: await count(env) }, 200];
 }
 
-async function cancel(env: Env, data: Record<string, unknown>): Promise<[unknown, number]> {
+// The personal answer link works both ways: coming and not coming are equally valid answers.
+// Without `attending` it only reports the current answer.
+async function answer(env: Env, data: Record<string, unknown>): Promise<[unknown, number]> {
 	const token = text(data.token, 64);
 	const row = token
-		? await env.DB.prepare('SELECT id, email, name, status, token FROM registrations WHERE token = ?').bind(token).first<Registration>()
+		? await env.DB.prepare('SELECT id, email, name, status, token, view_token FROM registrations WHERE token = ?').bind(token).first<Registration>()
 		: null;
-	if (!row) return [{ error: 'Odkaz na odhlášení není platný.' }, 404];
+	if (!row) return [{ error: 'Odkaz na změnu odpovědi není platný.' }, 404];
 
-	if (row.status === 'yes') {
+	const wanted = data.attending === 'yes' || data.attending === 'no' ? (data.attending as Status) : null;
+	let mailed = false;
+	if (wanted && wanted !== row.status) {
 		const at = now();
-		await env.DB.prepare("UPDATE registrations SET status = 'no', updated_at = ?, cancelled_at = ? WHERE id = ?").bind(at, at, row.id).run();
+		const viewToken = row.view_token ?? newToken();
+		await env.DB.prepare('UPDATE registrations SET status = ?, view_token = ?, updated_at = ?, cancelled_at = ? WHERE id = ?')
+			.bind(wanted, viewToken, at, wanted === 'no' ? at : null, row.id)
+			.run();
+		mailed = await sendAnswerMail(env, { ...row, status: wanted, view_token: viewToken });
+		row.status = wanted;
 	}
-	return [{ ok: true, name: row.name, already: row.status === 'no', count: await count(env) }, 200];
+	return [{ ok: true, name: row.name, coming: row.status === 'yes', mailed, count: await count(env) }, 200];
 }
 
-async function cancelLink(env: Env, data: Record<string, unknown>): Promise<[unknown, number]> {
+async function answerLink(env: Env, data: Record<string, unknown>): Promise<[unknown, number]> {
 	const email = text(data.email, 254).toLowerCase();
 	if (!EMAIL_RE.test(email)) return [{ error: 'Zkontrolujte prosím e-mail.' }, 400];
 
 	const row = await findByEmail(env, email);
-	if (row?.status === 'yes') {
-		await sendMail(env, email, 'Sraz gisáků: odkaz na odhlášení', [
+	if (row) {
+		await sendMail(env, email, 'Sraz gisáků: odkaz na změnu odpovědi', [
 			'Ahoj,',
 			'',
-			`přišla nám žádost o odkaz na odhlášení ze srazu (přihláška pod jménem ${row.name}).`,
-			'Pokud to nevyjde, odhlásit se můžeš tady:',
-			cancelUrl(env, row.token),
+			`přišla nám žádost o odkaz na změnu odpovědi na sraz (přihláška pod jménem ${row.name}).`,
+			'Odpověď změníš tady:',
+			answerUrl(env, row.token),
 			'',
-			'Pokud to nebyl tvůj požadavek, stačí tenhle e-mail ignorovat. Přihláška dál platí.',
+			'Pokud to nebyl tvůj požadavek, stačí tenhle e-mail ignorovat. Odpověď zůstává, jak byla.',
 			'',
 			SIGNATURE,
 		]);
 	}
 	// Same answer whether or not the address is registered, so the endpoint can't be used to probe addresses.
 	return [{ ok: true }, 200];
+}
+
+// Confirmation after every answer or change. Both links only ever travel by e-mail, so knowing someone's
+// address is not enough to change their answer or to read the sheet.
+async function sendAnswerMail(
+	env: Env,
+	row: { email: string; name: string; status: Status; token: string; view_token: string },
+): Promise<boolean> {
+	const links = (sheetIntro: string, changeIntro: string) => [
+		sheetIntro,
+		sheetUrl(env, row.view_token),
+		'',
+		changeIntro,
+		answerUrl(env, row.token),
+		'(Oba odkazy jsou jen pro tebe, nikomu je prosím neposílej.)',
+	];
+	if (row.status === 'yes') {
+		return sendMail(env, row.email, 'Sraz gisáků: počítáme s tebou!', [
+			'Ahoj,',
+			'',
+			`paráda, že dorazíš! Přihlášku máme zapsanou pod jménem ${row.name}.`,
+			'',
+			`Uvidíme se ${EVENT.when} ${EVENT.where}. Po dvaceti letech bude co probírat.`,
+			'',
+			`Termín si ulož do kalendáře: ${new URL('sraz.ics', env.SITE_URL)}`,
+			`Všechno ostatní najdeš na ${env.SITE_URL}`,
+			'',
+			...links('Kdo další přijede, uvidíš na prezenční listině:', 'Kdyby se ti do toho nakonec něco připletlo, odpověď změníš tady:'),
+			'',
+			'Těšíme se na tebe!',
+			SIGNATURE,
+		]);
+	}
+	return sendMail(env, row.email, 'Sraz gisáků: škoda, že to nevyjde', [
+		'Ahoj,',
+		'',
+		`díky za odpověď. Škoda, že to nevyjde, budeš chybět! Omluvenku máme zapsanou pod jménem ${row.name}.`,
+		'',
+		...links('Kdo přijede, uvidíš na prezenční listině:', 'Kdyby se to změnilo, odpověď změníš tady:'),
+		'',
+		SIGNATURE,
+	]);
 }
 
 async function attendees(env: Env, data: Record<string, unknown>): Promise<[unknown, number]> {
@@ -270,7 +285,7 @@ async function attendees(env: Env, data: Record<string, unknown>): Promise<[unkn
 }
 
 const origin = (env: Env) => new URL(env.SITE_URL).origin;
-const cancelUrl = (env: Env, token: string) => `${origin(env)}/#odhlasit=${token}`;
+const answerUrl = (env: Env, token: string) => `${origin(env)}/#odpoved=${token}`;
 const sheetUrl = (env: Env, token: string) => `${origin(env)}/#listina=${token}`;
 
 async function sendMail(env: Env, to: string, subject: string, lines: string[]): Promise<boolean> {

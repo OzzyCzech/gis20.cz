@@ -4,7 +4,8 @@ import Scrap from './Scrap.astro';
 
 // RSVP as a cut-out coupon, backed by the Cloudflare Worker in /worker (see rsvpApi in event.ts).
 // Guests answer coming / not coming. The confirmation e-mail carries two personal links: the attendance sheet
-// (https://gis20.cz/#listina=<token>, names only) and, for those coming, a cancel link (#odhlasit=<token>).
+// (https://gis20.cz/#listina=<token>, names only) and a link to change the answer either way (#odpoved=<token>;
+// #odhlasit=<token> from older e-mails opens the same panel).
 // Without a configured API the slip only renders in dev, so production never shows a dead form.
 const api = event.rsvpApi.trim().replace(/\/$/, '');
 const visible = Boolean(api) || import.meta.env.DEV;
@@ -17,6 +18,9 @@ const button =
 // Answer buttons: the whole box is the radio's label, the checked one turns dark.
 const choice =
 	'flex cursor-pointer items-center gap-2.5 rounded-sm border-2 border-ink/70 bg-white px-3 py-2 text-lg font-semibold has-checked:border-ink has-checked:bg-ink has-checked:text-news has-focus-visible:outline-3 has-focus-visible:outline-offset-1 has-focus-visible:outline-water';
+// The same look for the answer buttons on the personal answer panel; the current answer is pressed.
+const choiceButton =
+	'flex cursor-pointer items-center justify-center rounded-sm border-2 border-ink/70 bg-white px-3 py-2 text-lg font-semibold transition-colors hover:border-ink aria-pressed:cursor-default aria-pressed:border-ink aria-pressed:bg-ink aria-pressed:text-news disabled:opacity-60';
 const stamp =
 	'inline-block -rotate-6 border-4 border-double border-trail/80 px-5 py-2 font-cond text-2xl font-semibold tracking-wide text-trail/90 uppercase';
 ---
@@ -59,18 +63,17 @@ const stamp =
 						</p>
 					)}
 
-					{/* Opened from the cancel link in the confirmation e-mail. */}
-					<div data-rsvp-cancel hidden class="mt-6">
-						<p class="text-lg">Opravdu se chcete ze srazu odhlásit?</p>
-						<p class="mt-4">
-							<button type="button" data-rsvp-cancel-confirm class={button}>
-								Ano, odhlásit
-							</button>
-						</p>
-					</div>
-					<div data-rsvp-cancelled hidden class="mt-6">
-						<p class={stamp}>Odhlášeno</p>
-						<p class="mt-4 text-lg">Škoda, budete chybět. Kdybyste si to rozmysleli, stačí se přihlásit znovu.</p>
+					{/* Opened from the personal answer link in the confirmation e-mail. */}
+					<div data-rsvp-answer hidden class="mt-6">
+						<p class="text-lg">Odpověď pro <strong data-rsvp-answer-name />:</p>
+						<div class="mt-3 grid grid-cols-2 gap-3" role="group" aria-label="Přijedete?">
+							<button type="button" data-rsvp-answer-choice="yes" aria-pressed="false" class={choiceButton}>Přijedu</button>
+							<button type="button" data-rsvp-answer-choice="no" aria-pressed="false" class={choiceButton}>Nepřijedu</button>
+						</div>
+						<div data-rsvp-answer-saved hidden class="mt-6" role="status">
+							<p class={stamp} data-rsvp-answer-stamp />
+							<p class="mt-4 text-lg" data-rsvp-answer-text />
+						</div>
 					</div>
 
 					<form data-rsvp-form class="mt-6 grid gap-x-5 gap-y-4 sm:grid-cols-2" autocomplete="on">
@@ -138,11 +141,11 @@ const stamp =
 						<div data-rsvp-done-no hidden>
 							<p class={stamp}>Omluvenka</p>
 							<p class="mt-4 text-lg">
-								Škoda, budete chybět! Kdyby se to změnilo, stačí přihlášku vyplnit znovu se stejným e-mailem.
+								Škoda, budete chybět! Kdyby se to změnilo, odpověď změníte přes odkaz v e-mailu.
 							</p>
 						</div>
 						<p data-rsvp-mailed class="mt-2 text-sm text-ink-soft">
-							Na e-mail přišel odkaz na prezenční listinu, kde uvidíte, kdo všechno přijede.
+							Na e-mail přišel odkaz na prezenční listinu, kde uvidíte, kdo všechno přijede, a odkaz na změnu odpovědi.
 						</p>
 						<p data-rsvp-unmailed hidden class="mt-2 text-sm text-ink-soft">
 							Potvrzovací e-mail se teď nepodařilo odeslat, odpověď je ale zapsaná. Až budete chtít odkazy, odešlete prosím
@@ -171,7 +174,7 @@ const stamp =
 
 					<details data-rsvp-lost class="mt-6">
 						<summary class="cursor-pointer underline decoration-1 underline-offset-4">
-							Nakonec to nevyjde? Pošleme odkaz na odhlášení
+							Potřebujete změnit odpověď? Pošleme vám odkaz
 						</summary>
 						<form data-rsvp-link-form class="mt-3 flex flex-wrap items-end gap-4">
 							<label class:list={[label, 'min-w-56 flex-1']}>
@@ -183,7 +186,7 @@ const stamp =
 							</button>
 						</form>
 						<p data-rsvp-link-sent hidden class="mt-3">
-							Pokud je e-mail přihlášený, přišel na něj odkaz na odhlášení.
+							Pokud e-mail u nás máme, přišel na něj odkaz na změnu odpovědi.
 						</p>
 					</details>
 
@@ -260,7 +263,7 @@ const stamp =
 				const data = await call('/register', Object.fromEntries(new FormData(form)));
 				const coming = data.status !== 'no';
 				show(form, false);
-				show($('lost'), coming && data.mailed === false);
+				show($('lost'), data.mailed === false);
 				show($('done-yes'), coming);
 				show($('done-no'), !coming);
 				show($('mailed'), data.mailed !== false);
@@ -290,7 +293,7 @@ const stamp =
 			const button = linkForm.querySelector<HTMLButtonElement>('button')!;
 			button.disabled = true;
 			try {
-				await call('/cancel-link', Object.fromEntries(new FormData(linkForm)));
+				await call('/answer-link', Object.fromEntries(new FormData(linkForm)));
 				show(linkForm, false);
 				show($('link-sent'));
 			} catch (err) {
@@ -301,7 +304,7 @@ const stamp =
 
 		// Personal links from the e-mail only change the hash, which doesn't reload an already open page.
 		addEventListener('hashchange', () => {
-			if (/^#(odhlasit|listina)=/.test(location.hash)) location.reload();
+			if (/^#(odpoved|odhlasit|listina)=/.test(location.hash)) location.reload();
 		});
 
 		// Attendance sheet link from the e-mail: https://gis20.cz/#listina=<token>
@@ -345,29 +348,44 @@ const stamp =
 			show($('sheet'));
 		}
 
-		// Cancel link from the e-mail: https://gis20.cz/#odhlasit=<token>
-		const token = location.hash.match(/^#odhlasit=([a-f0-9]{16,64})$/)?.[1];
+		// Answer link from the e-mail: https://gis20.cz/#odpoved=<token> (or #odhlasit=<token> from older e-mails).
+		// Coming and not coming are equally valid answers, so the panel switches both ways.
+		const token = location.hash.match(/^#(?:odpoved|odhlasit)=([a-f0-9]{16,64})$/)?.[1];
 		if (token) {
+			const choices = [...root.querySelectorAll<HTMLButtonElement>('[data-rsvp-answer-choice]')];
+			const showAnswer = (coming: boolean) =>
+				choices.forEach((b) => b.setAttribute('aria-pressed', String((b.dataset.rsvpAnswerChoice === 'yes') === coming)));
 			show(form, false);
 			show($('lost'), false);
-			show($('cancel'));
 			root.scrollIntoView();
-			$<HTMLButtonElement>('cancel-confirm').addEventListener('click', async (e) => {
-				const button = e.currentTarget as HTMLButtonElement;
-				button.disabled = true;
-				show(error, false);
-				try {
-					const data = await call('/cancel', { token });
-					history.replaceState(null, '', location.pathname + location.search);
-					show($('cancel'), false);
-					show($('cancelled'));
-					show(form);
-					setCount(data.count);
-				} catch (err) {
-					fail(message(err));
-					button.disabled = false;
-				}
-			});
+			call('/answer', { token })
+				.then((data) => {
+					$('answer-name').textContent = data.name;
+					showAnswer(data.coming);
+					show($('answer'));
+				})
+				.catch((err) => fail(message(err)));
+
+			choices.forEach((choice) =>
+				choice.addEventListener('click', async () => {
+					if (choice.getAttribute('aria-pressed') === 'true') return;
+					choices.forEach((b) => (b.disabled = true));
+					show(error, false);
+					try {
+						const data = await call('/answer', { token, attending: choice.dataset.rsvpAnswerChoice });
+						showAnswer(data.coming);
+						$('answer-stamp').textContent = data.coming ? 'Zapsáno' : 'Omluvenka';
+						$('answer-text').textContent =
+							(data.coming ? 'Díky, počítáme s vámi! Uvidíme se ve sklepě.' : 'Škoda, budete chybět!') +
+							(data.mailed ? ' Potvrzení přišlo na e-mail.' : '');
+						show($('answer-saved'));
+						setCount(data.count);
+					} catch (err) {
+						fail(message(err));
+					}
+					choices.forEach((b) => (b.disabled = false));
+				}),
+			);
 		}
 	}
 </script>

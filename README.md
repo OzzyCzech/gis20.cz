@@ -16,9 +16,10 @@ Built with Astro and Tailwind CSS v4.
 
 All event facts live in `src/data/event.ts`. Optional fields are hidden on the page until filled in.
 The RSVP slip (`src/components/RsvpSlip.astro`) talks to the Cloudflare Worker in `worker/` (URL in `rsvpApi`).
-Sign-up stores name, e-mail and an optional note in D1 and sends a confirmation e-mail (Resend) with a
-personal cancel link `https://gis20.cz/#odhlasit=<token>`; anyone who lost it can request a new one on the slip.
-The page only ever shows the head count. Without `rsvpApi` the slip renders only in dev.
+Guests answer coming or not coming; the answer, name, e-mail, phone and an optional note go to D1 and a
+confirmation e-mail (Resend) brings two personal links: the attendance sheet and a link to change the answer
+either way. Anyone who lost them can request the answer link again on the slip.
+Publicly the page only shows the head count. Without `rsvpApi` the slip renders only in dev.
 `rsvpDeadline`, `contactEmail`, `contactPhone` and `paymentInfo` are shown on the slip when filled.
 
 Coordinates in `venueCoords` are the wine cellar itself; they drive the map pin, the map links and the distance.
@@ -56,8 +57,8 @@ npx wrangler d1 execute gis20-rsvp --remote --command "SELECT name, email, phone
 ```
 
 Guests answer "Přijedu" or "Nepřijedu". The confirmation e-mail has a personal link to the attendance sheet
-(`/#listina=<token>`, names and answers only) and, for those coming, a cancel link (`/#odhlasit=<token>`).
-The two tokens are separate, so a forwarded sheet link can't cancel anyone. Publicly the site shows only the head count.
+(`/#listina=<token>`, names and answers only) and a link to change the answer both ways (`/#odpoved=<token>`).
+The two tokens are separate, so a forwarded sheet link can't change anyone's answer. Publicly the site shows only the head count.
 
 Registrations can also be browsed in the Cloudflare dashboard (Storage & Databases → D1 → gis20-rsvp).
 E-mails are sent from `sraz@gis20.cz` through Resend; the domain is verified there via DNS records.
