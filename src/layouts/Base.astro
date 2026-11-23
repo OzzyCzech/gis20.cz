@@ -20,6 +20,8 @@ const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site) : undefin
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<title>{title}</title>
 		<meta name="description" content={description} />
+		<!-- Private invitation: keep it out of search engines (see also public/robots.txt). -->
+		<meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
 		{canonical && <link rel="canonical" href={canonical} />}
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="theme-color" content="#edead8" />

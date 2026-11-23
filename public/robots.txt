@@ -1,0 +1,3 @@
+# Private invitation: no crawling or indexing by any robot.
+User-agent: *
+Disallow: /
