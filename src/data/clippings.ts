@@ -61,7 +61,7 @@ export const clippings: Clipping[] = [
 		body: 'Student odevzdal semestrálku z PAD, která měla 80 stran a 14 map. Po měsíci čekání přišla ve 2:45 ráno laxní odpověď:',
 		facsimile: {
 			subject: 'Re: Prostorová analýza dat – odevzdání',
-			text: ['ok', 'JH'],
+			text: ['DD,', 'ok', 'JH'],
 		},
 		footer: 'Díky, Jirko!',
 	},
