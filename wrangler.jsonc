@@ -13,6 +13,11 @@
 		"not_found_handling": "404-page",
 		"run_worker_first": true
 	},
+	// Custom domains: Cloudflare creates the DNS records and certificates for both hostnames.
+	"routes": [
+		{ "pattern": "gis20.cz", "custom_domain": true },
+		{ "pattern": "www.gis20.cz", "custom_domain": true }
+	],
 	"vars": {
 		"MAIL_FROM": "Sraz gisáků <sraz@gis20.cz>",
 		"SITE_URL": "https://gis20.cz/",

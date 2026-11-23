@@ -50,7 +50,8 @@ const CANONICAL_HOST = 'gis20.cz';
 export default {
 	async fetch(request: Request, env: Env): Promise<Response> {
 		const url = new URL(request.url);
-		if (url.hostname === `www.${CANONICAL_HOST}`) {
+		// One canonical origin: https, no www (localhost and workers.dev previews are left alone).
+		if (url.hostname === `www.${CANONICAL_HOST}` || (url.hostname === CANONICAL_HOST && url.protocol === 'http:')) {
 			return Response.redirect(`https://${CANONICAL_HOST}${url.pathname}${url.search}`, 301);
 		}
 		if (url.pathname.startsWith('/api/')) return api(request, env, url.pathname.slice(4));

@@ -3,7 +3,7 @@ import Base from '../layouts/Base.astro';
 import Scrap from '../components/Scrap.astro';
 import { event } from '../data/event';
 
-// GitHub Pages serves dist/404.html for every unknown URL.
+// The Worker serves dist/404.html for every unknown URL (not_found_handling in wrangler.jsonc).
 const button =
 	'inline-block border-2 border-ink px-4 py-2 font-cond text-lg font-semibold leading-tight transition-colors hover:bg-ink hover:text-news';
 ---
