@@ -16,10 +16,19 @@ interface D1Database {
 	prepare(query: string): D1PreparedStatement;
 }
 
+interface ForwardableEmailMessage {
+	readonly from: string;
+	readonly to: string;
+	forward(rcptTo: string, headers?: Headers): Promise<void>;
+	setReject(reason: string): void;
+}
+
 interface Env {
 	ASSETS: { fetch(request: Request): Promise<Response> };
 	DB: D1Database;
 	RESEND_API_KEY?: string;
+	/** Secret: comma-separated addresses that mail for sraz@gis20.cz is forwarded to (each verified in Email Routing). */
+	FORWARD_TO?: string;
 	MAIL_FROM: string;
 	SITE_URL: string;
 	ALLOWED_ORIGINS: string;
@@ -51,6 +60,19 @@ export default {
 		const response = new Response(asset.body, asset);
 		response.headers.set('X-Robots-Tag', 'noindex, nofollow, noarchive');
 		return response;
+	},
+
+	// Email Routing sends sraz@gis20.cz here; a routing rule can only target one address, the Worker can fan out.
+	async email(message: ForwardableEmailMessage, env: Env): Promise<void> {
+		const targets = (env.FORWARD_TO ?? '')
+			.split(',')
+			.map((address) => address.trim())
+			.filter(Boolean);
+		if (!targets.length) {
+			message.setReject('Mailbox not configured');
+			return;
+		}
+		await Promise.all(targets.map((address) => message.forward(address)));
 	},
 };
 

@@ -54,3 +54,6 @@ npx wrangler d1 execute gis20-rsvp --remote --command "SELECT name, email, phone
 
 Registrations can also be browsed in the Cloudflare dashboard (Storage & Databases → D1 → gis20-rsvp).
 E-mails are sent from `sraz@gis20.cz` through Resend; the domain is verified there via DNS records.
+Mail to `sraz@gis20.cz` goes through Cloudflare Email Routing to the same Worker, which forwards it to every address
+in the secret `FORWARD_TO` (comma-separated; each address must be verified under Email Routing → Destination addresses):
+`npx wrangler secret put FORWARD_TO`.
