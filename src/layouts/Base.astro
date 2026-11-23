@@ -3,6 +3,16 @@ import '@fontsource-variable/caveat';
 import '@fontsource-variable/newsreader';
 import '@fontsource-variable/oswald';
 import '../styles/global.css';
+// Preload the Latin subsets (Czech needs latin-ext too) so text renders in its own font right away
+// instead of flashing the fallback; the ?url imports resolve to the same hashed files the CSS uses.
+import caveatLatin from '@fontsource-variable/caveat/files/caveat-latin-wght-normal.woff2?url';
+import caveatLatinExt from '@fontsource-variable/caveat/files/caveat-latin-ext-wght-normal.woff2?url';
+import newsreaderLatin from '@fontsource-variable/newsreader/files/newsreader-latin-wght-normal.woff2?url';
+import newsreaderLatinExt from '@fontsource-variable/newsreader/files/newsreader-latin-ext-wght-normal.woff2?url';
+import oswaldLatin from '@fontsource-variable/oswald/files/oswald-latin-wght-normal.woff2?url';
+import oswaldLatinExt from '@fontsource-variable/oswald/files/oswald-latin-ext-wght-normal.woff2?url';
+
+const fonts = [newsreaderLatin, newsreaderLatinExt, oswaldLatin, oswaldLatinExt, caveatLatin, caveatLatinExt];
 
 interface Props {
 	title: string;
@@ -20,6 +30,7 @@ const ogImage = new URL('/og.png', Astro.site ?? Astro.url);
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		{fonts.map((href) => <link rel="preload" href={href} as="font" type="font/woff2" crossorigin />)}
 		<title>{title}</title>
 		<meta name="description" content={description} />
 		<!-- Private invitation: keep it out of search engines (see also public/robots.txt). -->

@@ -64,6 +64,8 @@ export default {
 		const asset = await env.ASSETS.fetch(request);
 		const response = new Response(asset.body, asset);
 		response.headers.set('X-Robots-Tag', 'noindex, nofollow, noarchive');
+		// Build output under /_astro/ has content hashes in its names, so browsers may keep it for good.
+		if (url.pathname.startsWith('/_astro/') && asset.ok) response.headers.set('Cache-Control', 'public, max-age=31536000, immutable');
 		return response;
 	},
 
