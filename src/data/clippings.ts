@@ -1,7 +1,7 @@
 // Fake newspaper scraps scattered over the map in the "Z archivu" section.
 // Edit freely: dates only where the event really happened then; mastheads are fictional.
 
-export type ClippingArt = 'wine' | 'salami' | 'globe' | 'puck' | 'floppy' | 'satellite' | 'pole' | 'swatch';
+export type ClippingArt = 'wine' | 'salami' | 'globe' | 'puck' | 'floppy' | 'satellite' | 'pole' | 'swatch' | 'fire';
 
 export type Clipping = {
 	kind: 'news' | 'ad' | 'classified';
@@ -45,7 +45,7 @@ export const clippings: Clipping[] = [
 		kicker: 'Kultura',
 		headline: 'Studenti založili punkovou skupinu Karpílní tunely',
 		body: 'Na prvním koncertu ve Vrtačce zazněly pecky jako Topologická chyba, Křovákova deformace, Souřadnice vzpoury, Šikmá konformita, Ortogonální odpor nebo Geodetická anarchie.',
-		footer: 'Bratři v Kliku',
+		footer: 'Bratři v Kliku.',
 		image: {
 			file: 'bratri-v-kliku.png',
 			alt: 'Potisk trička: tři kreslení kluci v objetí, na tričkách nápis GIS, pod nimi Bratři v Kliku',
@@ -70,7 +70,7 @@ export const clippings: Clipping[] = [
 		kicker: 'Černá kronika',
 		headline: 'Ztracen v Sherwoodu',
 		body: 'Známý pedagog se cestou z nechvalně proslulé Myslivny ztratil v lese přilehlém ke kolejím. Orientační schopnosti geoinformatika tentokrát selhaly.',
-		footer: 'Měl jsem zůstat u Linuxu',
+		footer: 'Měl jsem zůstat u Linuxu.',
 	},
 	{
 		kind: 'classified',
@@ -86,7 +86,7 @@ export const clippings: Clipping[] = [
 		kicker: 'Černá kronika',
 		headline: 'Otevíral pivo výtyčkou',
 		body: 'Nejmenovaný student geoinformatiky otevíral na měření pivo výtyčkou. Podle svědků proběhlo měření bez závad, láhev nebyla poškozená a tento úkon neměl na výsledky měření vliv.',
-		footer: 'Pivo otevřu čímkoliv',
+		footer: 'Pivo otevřu čímkoliv.',
 		art: 'pole',
 	},
 	{
@@ -95,8 +95,16 @@ export const clippings: Clipping[] = [
 		kicker: 'Kartografie',
 		headline: 'Ta hnědá je málo hnědá!',
 		body: 'Student utratil všechny peníze, které měl uložené stranou na alkohol, za tisk vrstevnic na A3 pauzovací papír a nakonec docentce nebyla hnědá barva dost hnědá!',
-		footer: 'Tak řekni, že ses splet',
+		footer: 'Tak řekni, že ses spletl.',
 		art: 'swatch',
+	},
+	{
+		kind: 'news',
+		masthead: 'Gisácký deník',
+		kicker: 'Černá kronika',
+		headline: 'Shořely mu boty!',
+		body: 'Poškozený musel zhruba dvoukilometrovou cestu absolvovat bos. Pachatel zůstává neznámý, vyšetřování komplikuje nedostatek střízlivých svědků.',
+		art: 'fire',
 	},
 	{
 		kind: 'news',
@@ -111,8 +119,15 @@ export const clippings: Clipping[] = [
 		kicker: 'Terénní cvičení',
 		headline: 'Topcon GPS hledá signál už třetí hodinu',
 		body: 'Skupinka deseti studentů se už třetí hodinu marně snaží ulovit signál GPS na přístroji značky Topcon. Svačina došla v 9:15, zásoby alkoholu jsou zatím dostačující.',
-		footer: 'Pak to naklikáme v ArcGISu',
+		footer: 'Pak to naklikáme v ArcGISu.',
 		art: 'satellite',
+	},
+	{
+		kind: 'news',
+		masthead: 'Gisácký deník',
+		kicker: 'Černá kronika',
+		headline: 'Nechal otevřeno',
+		body: 'Student oslavil Den dětí otevřenými dveřmi učebny J339. Neznámý pachatel příležitosti využil a odnesl si na oslavu projektor za 60 tisíc korun.',
 	},
 	{
 		kind: 'news',

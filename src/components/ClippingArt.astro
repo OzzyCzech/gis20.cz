@@ -187,6 +187,20 @@ const ticks = Array.from({ length: 27 }, (_, i) => ({ x: 16 + i * 6.5, h: i % 10
 			)
 		}
 		{
+			art === 'fire' && (
+				<>
+					{/* campfire */}
+					<path
+						d="M100 86C82 86 70 74 70 58C70 47 75 39 82 31C82 39 84 44 88 47C90 32 96 19 104 5C113 18 121 29 118 43C122 41 125 37 126 31C132 41 132 50 130 58C130 74 118 86 100 86Z"
+						fill={fill}
+					/>
+					<path d="M100 83C92 83 88 77 88 71C88 65 92 60 96 56C96 62 98 64 100 64C100 58 102 52 106 48C110 56 112 62 112 71C112 77 108 83 100 83Z" fill="#f4ecd8" />
+					<rect x="62" y="91" width="76" height="10" rx="5" fill="currentColor" stroke="none" transform="rotate(11 100 96)" />
+					<rect x="62" y="91" width="76" height="10" rx="5" fill="currentColor" stroke="#f4ecd8" stroke-width="2" transform="rotate(-11 100 96)" />
+				</>
+			)
+		}
+		{
 			art === 'satellite' && (
 				<>
 					<rect x="84" y="38" width="32" height="34" fill={fill} />
