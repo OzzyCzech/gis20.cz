@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { event, formatCzk, promotionYear } from '../data/event';
+import { event, formatCzk, mapLinks, promotionYear } from '../data/event';
 
 // Static iCalendar file so guests can add the event with one click.
 
@@ -32,10 +32,13 @@ export const GET: APIRoute = ({ site }) => {
 	const url = site?.href ?? '';
 	const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
 	const { start, end } = event;
+	const { lat, lon } = event.venueCoords;
+	const place = `${event.venue}, ${event.town}`;
 
 	const description = [
 		`${event.yearsSince} let od promocí (${promotionYear}) – obor ${event.field}, ${event.school}.`,
 		`Cena: ${formatCzk(event.price).replace(/\u00A0/g, ' ')} (${event.priceIncludes}).`,
+		`Mapa: ${mapLinks(event.venueCoords).mapy}`,
 		url,
 	]
 		.filter(Boolean)
@@ -54,7 +57,10 @@ export const GET: APIRoute = ({ site }) => {
 		// All-day DTEND is exclusive, so it is the day after the last day.
 		`DTEND;VALUE=DATE:${icsDate(end.y, end.m, end.d + 1)}`,
 		`SUMMARY:${escape(event.title)}`,
-		`LOCATION:${escape(`${event.venue}, ${event.town}`)}`,
+		`LOCATION:${escape(place)}`,
+		// Standard coordinates, plus Apple's variant that makes Apple Calendar show a map pin.
+		`GEO:${lat};${lon}`,
+		`X-APPLE-STRUCTURED-LOCATION;VALUE=URI;X-APPLE-RADIUS=50;X-TITLE="${place}":geo:${lat},${lon}`,
 		`DESCRIPTION:${escape(description)}`,
 		...(url ? [`URL:${url}`] : []),
 		'END:VEVENT',
