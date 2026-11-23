@@ -9,7 +9,10 @@ export type Clipping = {
 	headline: string;
 	/** Subheadline under the headline. */
 	deck?: string;
-	body: string;
+	/** Optional for a song, which has `lyrics` instead. */
+	body?: string;
+	/** Song lyrics, one line per item, printed in italics after `body`. */
+	lyrics?: string[];
 	masthead?: string;
 	date?: string;
 	footer?: string | string[];
@@ -101,6 +104,12 @@ export const clippings: Clipping[] = [
 		headline: 'Sejdeme se na C6',
 		body: 'Na skutečný život připravily studenty především přednášky a semináře v C6. Účast byla dobrovolná, docházka rekordní.',
 		footer: 'Zipe, platíš deset!',
+	},
+	{
+		kind: 'news',
+		kicker: 'Zpěvník',
+		headline: 'Povrchový důl',
+		lyrics: ['Nejkrásnější věc na světě', 'je povrchový důl, jooo povrchový důl…', 'Joooo povrchový důl!'],
 	},
 	{
 		kind: 'news',
