@@ -29,7 +29,7 @@ export const clippings: Clipping[] = [
 	{
 		kind: 'news',
 		kicker: 'Kultura',
-		headline: 'Studenti založili punkovou skupinu Karpílní tunely',
+		headline: 'Studenti založili punkovou skupinu Karpální tunely',
 		body: 'Na prvním koncertu ve Vrtačce zazněly pecky jako Topologická chyba, Křovákova deformace, Souřadnice vzpoury, Šikmá konformita, Ortogonální odpor nebo Geodetická anarchie.',
 		footer: 'Bratři v Kliku.',
 		image: {
@@ -59,11 +59,11 @@ export const clippings: Clipping[] = [
 		kicker: 'Školství',
 		headline: 'Konečně hotovo!',
 		body: 'Student odevzdal semestrálku z PAD, která měla 80 stran a 14 map. Po měsíci čekání přišla ve 2:45 ráno laxní odpověď:',
-		after: 'ok. <b>J</b>si <b>H</b>otov!',
 		facsimile: {
 			subject: 'Re: Prostorová analýza dat – odevzdání',
 			text: ['ok', 'JH'],
 		},
+		footer: 'Díky, Jirko!',
 	},
 	{
 		kind: 'news',
@@ -77,6 +77,7 @@ export const clippings: Clipping[] = [
 		kicker: 'Černá kronika',
 		headline: 'Shořely mu boty!',
 		body: 'Poškozený musel zhruba dvoukilometrovou cestu absolvovat bos. Pachatel zůstává neznámý, vyšetřování komplikuje nedostatek střízlivých svědků.',
+		footer: 'P.... plus deset.',
 		art: 'fire',
 	},
 	{
