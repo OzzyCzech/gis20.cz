@@ -14,7 +14,7 @@ export type MapOptions = {
 };
 
 // Map symbols centred on 0,0: beer mug, cocktail glass, hut.
-const SYMBOLS: Record<PubKind, string> = {
+export const SYMBOLS: Record<PubKind, string> = {
 	pub: '<rect x="-4.5" y="-5" width="7" height="10" rx="1"/><path d="M2.5-2.5h1.5a1.7 1.7 0 0 1 1.7 1.7v1.6a1.7 1.7 0 0 1-1.7 1.7H2.5" fill="none" stroke="#7a5a3c" stroke-width="1.5"/>',
 	bar: '<path d="M-5-5h10l-4.3 5v4h2.8v1.4h-7v-1.4h2.8v-4z"/>',
 	hut: '<path d="M-6 0.5 0-5.5l6 6h-1.5v5h-9v-5z"/>',

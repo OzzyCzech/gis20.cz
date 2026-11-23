@@ -6,6 +6,7 @@ import Countdown from '../components/Countdown.astro';
 import RouteMap from '../components/RouteMap.astro';
 import Scrap from '../components/Scrap.astro';
 import { clippings } from '../data/clippings';
+import { SYMBOLS } from '../lib/contours';
 import {
 	distanceKm,
 	event,
@@ -231,6 +232,12 @@ const button =
 				</li>
 				<li class="flex items-center gap-2">
 					<svg viewBox="0 0 28 10" class="h-2.5 w-7" aria-hidden="true"
+						><path d="M1 5h26" stroke="#8a7a68" stroke-width="6"></path><path d="M1 5h26" stroke="#f3d68a" stroke-width="4"></path></svg
+					>
+					silnice
+				</li>
+				<li class="flex items-center gap-2">
+					<svg viewBox="0 0 28 10" class="h-2.5 w-7" aria-hidden="true"
 						><path d="M1 5h26" stroke="#c8332f" stroke-width="2.2" stroke-dasharray="5 3"></path></svg
 					>
 					turistická trasa
@@ -246,6 +253,22 @@ const button =
 						><rect x="1" y="1" width="26" height="8" rx="3" fill="#d3e2bd"></rect></svg
 					>
 					les
+				</li>
+				<li class="flex items-center gap-2">
+					<svg viewBox="0 0 28 10" class="h-2.5 w-7" aria-hidden="true"><path d="M14 1.5l4.5 7.5h-9z" fill="#6b4a2b"></path></svg>
+					kóta
+				</li>
+				<li class="flex items-center gap-2">
+					<svg viewBox="-14 -6 28 12" class="h-3 w-7" fill="#7a5a3c" aria-hidden="true"><g set:html={SYMBOLS.pub} /></svg>
+					hospoda
+				</li>
+				<li class="flex items-center gap-2">
+					<svg viewBox="-14 -6 28 12" class="h-3 w-7" fill="#7a5a3c" aria-hidden="true"><g set:html={SYMBOLS.bar} /></svg>
+					bar
+				</li>
+				<li class="flex items-center gap-2">
+					<svg viewBox="-14 -6 28 12" class="h-3 w-7" fill="#7a5a3c" aria-hidden="true"><g set:html={SYMBOLS.hut} /></svg>
+					chata
 				</li>
 			</ul>
 		</Scrap>
