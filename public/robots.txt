@@ -1,3 +1,16 @@
-# Private invitation: no crawling or indexing by any robot.
+# Private invitation: kept out of search engines.
+# Only link preview bots (chat apps, social networks) may fetch pages, so shared links show a preview.
+User-agent: facebookexternalhit
+User-agent: Facebot
+User-agent: Twitterbot
+User-agent: Slackbot
+User-agent: Slackbot-LinkExpanding
+User-agent: LinkedInBot
+User-agent: TelegramBot
+User-agent: Discordbot
+User-agent: WhatsApp
+Allow: /
+
+# Everyone else, search engines and AI crawlers included.
 User-agent: *
 Disallow: /
