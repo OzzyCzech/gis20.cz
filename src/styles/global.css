@@ -22,6 +22,8 @@
 
 @layer base {
 	html {
+		/* The whole page grows with wide windows: 16px up to 1280px, then up to 20px at 2560px. Sizes are in rem. */
+		font-size: clamp(100%, calc(75% + 0.3125vw), 125%);
 		background: var(--color-map) url("/map.svg") 0 0 / 1200px 1200px repeat;
 		color: var(--color-ink);
 		-webkit-text-size-adjust: 100%;

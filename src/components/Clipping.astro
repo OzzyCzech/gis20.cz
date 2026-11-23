@@ -57,9 +57,9 @@ const photo = c.image && Object.entries(photos).find(([path]) => path.endsWith(`
 					</div>
 				)}
 				<h3 class="mt-2 font-cond text-4xl leading-none font-bold tracking-tight uppercase">{c.headline}</h3>
-				<p class="mt-3 text-[15px] leading-snug">{c.body}</p>
+				<p class="mt-3 text-[1.0625rem] leading-snug">{c.body}</p>
 				{footers.length > 0 && (
-					<div class="mt-3 border-t border-ink/40 pt-2 text-sm italic">
+					<div class="mt-3 border-t border-ink/40 pt-2 text-base italic">
 						{footers.map((line, i) => (
 							<p class:list={[i > 0 && 'mt-1']}>{line}</p>
 						))}
@@ -69,12 +69,12 @@ const photo = c.image && Object.entries(photos).find(([path]) => path.endsWith(`
 		) : (
 			<>
 				{(c.masthead || c.date) && (
-					<div class="mb-3 flex items-baseline justify-between gap-3 border-y border-ink/70 py-1 text-[11px] italic">
+					<div class="mb-3 flex items-baseline justify-between gap-3 border-y border-ink/70 py-1 text-xs italic">
 						<span>{c.masthead}</span>
 						<span class="tabular-nums not-italic">{c.date}</span>
 					</div>
 				)}
-				<p class="font-cond text-[12px] font-semibold tracking-wide text-trail">{c.kicker}</p>
+				<p class="font-cond text-[0.8125rem] font-semibold tracking-wide text-trail">{c.kicker}</p>
 				<h3
 					class:list={[
 						'mt-1 leading-[1.05] font-bold tracking-tight text-balance',
@@ -111,9 +111,9 @@ const photo = c.image && Object.entries(photos).find(([path]) => path.endsWith(`
 						{c.image.caption && <figcaption class="mt-1 text-xs italic">{c.image.caption}</figcaption>}
 					</figure>
 				)}
-				<p class="mt-3 text-[15px] leading-snug text-pretty hyphens-auto">{c.body}</p>
+				<p class="mt-3 text-[1.0625rem] leading-snug text-pretty hyphens-auto">{c.body}</p>
 				{c.facsimile && (
-					<figure class="mt-3 -rotate-1 border border-ink/30 bg-receipt px-4 py-3 font-mono text-[12px] leading-snug shadow-sm">
+					<figure class="mt-3 -rotate-1 border border-ink/30 bg-receipt px-4 py-3 font-mono text-[0.8125rem] leading-snug shadow-sm">
 						{c.facsimile.from && <p class="text-ink-soft">Od: {c.facsimile.from}</p>}
 						<p class="text-ink-soft">Předmět: {c.facsimile.subject}</p>
 						<div class="mt-3 text-base font-bold">
@@ -121,9 +121,9 @@ const photo = c.image && Object.entries(photos).find(([path]) => path.endsWith(`
 						</div>
 					</figure>
 				)}
-				{c.after && <p class="mt-3 text-[15px] leading-snug text-pretty hyphens-auto" set:html={c.after} />}
+				{c.after && <p class="mt-3 text-[1.0625rem] leading-snug text-pretty hyphens-auto" set:html={c.after} />}
 				{footers.map((line) => (
-					<p class="mt-2 text-sm italic">{line}</p>
+					<p class="mt-2 text-base italic">{line}</p>
 				))}
 			</>
 		)

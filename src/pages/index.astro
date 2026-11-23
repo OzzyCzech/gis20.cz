@@ -54,7 +54,7 @@ const inlineLink = 'underline decoration-1 underline-offset-4 transition-colors 
 					<p class="py-2 text-center text-[clamp(2.1rem,9vw,3.75rem)] leading-none font-extrabold tracking-tight">
 						Gisácký sraz
 					</p>
-					<div class="flex justify-between gap-4 border-y-[3px] border-double border-ink py-1 text-xs sm:text-sm">
+					<div class="flex justify-between gap-4 border-y-[3px] border-double border-ink py-1 text-sm sm:text-base">
 						<span>Ostrava – Dolní Bojanovice</span>
 						<span class="text-right first-letter:uppercase">{dateline}</span>
 					</div>
@@ -72,7 +72,7 @@ const inlineLink = 'underline decoration-1 underline-offset-4 transition-colors 
 				</p>
 
 				<div class="mt-7 border-t border-ink/60 pt-5">
-					<div class="max-w-[60ch] text-[17px] leading-relaxed text-pretty hyphens-auto">
+					<div class="max-w-[60ch] text-[1.1875rem] leading-relaxed text-pretty hyphens-auto">
 						<p
 							class="first-letter:float-left first-letter:mt-1 first-letter:mr-2 first-letter:text-[3.6rem] first-letter:leading-[0.8] first-letter:font-bold"
 						>
@@ -157,7 +157,7 @@ const inlineLink = 'underline decoration-1 underline-offset-4 transition-colors 
 					paper="var(--color-receipt)"
 					attach="tape"
 					class="col-span-2 w-full max-w-[17rem] justify-self-center"
-					innerClass="px-5 pt-6 pb-8 font-mono text-[13px] leading-relaxed uppercase"
+					innerClass="px-5 pt-6 pb-8 font-mono text-[0.875rem] leading-relaxed uppercase"
 				>
 					<p class="-mt-1 mb-3 -rotate-3 text-center font-hand text-[1.7rem] leading-none font-bold text-water normal-case">
 						Kolik to stojí?
@@ -182,11 +182,11 @@ const inlineLink = 'underline decoration-1 underline-offset-4 transition-colors 
 			<!-- Where: newspaper note + torn piece of map -->
 			<Scrap seed={5} rotate={1.5} attach="pin" class="lg:col-span-5 lg:mt-10" innerClass="px-6 pt-7 pb-8">
 				<h2 class="text-[2rem] leading-[1.05] font-bold tracking-tight">Z Báňské až do sklepa</h2>
-				<p class="mt-3 text-[17px] leading-relaxed">
+				<p class="mt-3 text-[1.1875rem] leading-relaxed">
 					Sejdeme se ve vinném sklepě v Dolních Bojanovicích. Z Ostravy je to vzdušnou čarou asi {km}&nbsp;km. Po silnici to
 					bude víc, ale trasu si jako gisáci spočítá každý sám.
 				</p>
-				<p class="mt-4 text-sm text-ink-soft">Souřadnice sklepa: <span class="font-mono">{coords}</span></p>
+				<p class="mt-4 text-base text-ink-soft">Souřadnice sklepa: <span class="font-mono">{coords}</span></p>
 				<p class="mt-4 flex flex-wrap gap-3">
 					<a href={links.mapy} target="_blank" rel="noopener" class={button}>Otevřít v Mapy.com</a>
 					<a href={links.osm} target="_blank" rel="noopener" class={button}>OpenStreetMap</a>

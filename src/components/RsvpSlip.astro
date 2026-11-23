@@ -15,7 +15,8 @@ const field =
 	'mt-1.5 block w-full rounded-sm border-2 border-ink/70 bg-white px-3 py-2 text-lg leading-snug font-normal text-ink placeholder:text-ink-soft/70 focus:border-ink focus:outline-3 focus:outline-offset-1 focus:outline-water';
 const button =
 	'border-2 border-ink bg-ink px-5 py-2.5 font-cond text-lg font-semibold text-news transition-colors hover:border-trail hover:bg-trail disabled:opacity-60';
-// Answer buttons: the whole box is the radio's label, the checked one turns dark.
+// Answer buttons: the whole box is the radio's label, the checked one turns dark. They sit side by side and
+// stack when the slip is too narrow for both labels (the grid's auto-fit columns).
 const choice =
 	'flex cursor-pointer items-center gap-2.5 rounded-sm border-2 border-ink/70 bg-white px-3 py-2 text-lg font-semibold has-checked:border-ink has-checked:bg-ink has-checked:text-news has-focus-visible:outline-3 has-focus-visible:outline-offset-1 has-focus-visible:outline-water';
 // The same look for the answer buttons on the personal answer panel; the current answer is pressed.
@@ -37,8 +38,8 @@ const stamp =
 				class="w-full max-w-xl"
 				innerClass="p-3"
 			>
-				<div class="border-2 border-dashed border-ink/60 px-6 pt-5 pb-7 sm:px-8">
-					<p class="text-sm text-ink-soft italic" aria-hidden="true">
+				<div class="border-2 border-dashed border-ink/60 px-4 pt-5 pb-7 sm:px-8">
+					<p class="text-[0.9375rem] text-ink-soft italic" aria-hidden="true">
 						✂ zde odstřihněte
 					</p>
 					<div class="mt-2 flex items-start justify-between gap-4">
@@ -66,7 +67,7 @@ const stamp =
 					{/* Opened from the personal answer link in the confirmation e-mail. */}
 					<div data-rsvp-answer hidden class="mt-6">
 						<p class="text-lg">Odpověď pro <strong data-rsvp-answer-name />:</p>
-						<div class="mt-3 grid grid-cols-2 gap-3" role="group" aria-label="Přijedete?">
+						<div class="mt-3 grid grid-cols-[repeat(auto-fit,minmax(9rem,1fr))] gap-3" role="group" aria-label="Přijedete?">
 							<button type="button" data-rsvp-answer-choice="yes" aria-pressed="false" class={choiceButton}>Přijedu</button>
 							<button type="button" data-rsvp-answer-choice="no" aria-pressed="false" class={choiceButton}>Nepřijedu</button>
 						</div>
@@ -84,7 +85,7 @@ const stamp =
 					<form data-rsvp-form class="mt-6 grid gap-x-5 gap-y-4 sm:grid-cols-2" autocomplete="on">
 						<fieldset class="sm:col-span-2">
 							<legend class={label}>Přijedete?</legend>
-							<div class="mt-1.5 grid grid-cols-2 gap-3">
+							<div class="mt-1.5 grid grid-cols-[repeat(auto-fit,minmax(9rem,1fr))] gap-3">
 								<label class={choice}>
 									<input type="radio" name="attending" value="yes" checked class="size-4 accent-trail" />
 									Přijedu
@@ -120,7 +121,7 @@ const stamp =
 							<label for="rsvp-note" class={label}>
 								Poznámka <span class="font-normal text-ink-soft">(nepovinné)</span>
 							</label>
-							<p id="rsvp-note-hint" class="text-sm text-ink-soft">Strava, nocleh, spolujízda nebo cokoliv dalšího, co nám chcete napsat.</p>
+							<p id="rsvp-note-hint" class="text-[0.9375rem] text-ink-soft">Strava, nocleh, spolujízda nebo cokoliv dalšího, co nám chcete napsat.</p>
 							<textarea id="rsvp-note" class:list={[field, 'resize-y']} name="note" rows="3" maxlength="500" aria-describedby="rsvp-note-hint" />
 						</div>
 						{/* Honeypot for bots, hidden from people and screen readers. */}
@@ -132,7 +133,7 @@ const stamp =
 							<button type="submit" class={button}>
 								Potvrdit účast
 							</button>
-							<p class="max-w-xs text-sm text-ink-soft">
+							<p class="max-w-xs text-[0.9375rem] text-ink-soft">
 								Vaše jméno uvidí ostatní přihlášení na prezenční listině, e-mail a telefon jen organizátoři.
 							</p>
 						</div>
@@ -149,10 +150,10 @@ const stamp =
 								Škoda, budete chybět! Kdyby se to změnilo, odpověď změníte přes odkaz v e-mailu.
 							</p>
 						</div>
-						<p data-rsvp-mailed class="mt-2 text-sm text-ink-soft">
+						<p data-rsvp-mailed class="mt-2 text-[0.9375rem] text-ink-soft">
 							Na e-mail přišel odkaz na prezenční listinu, kde uvidíte, kdo všechno přijede, a odkaz na změnu odpovědi.
 						</p>
-						<p data-rsvp-unmailed hidden class="mt-2 text-sm text-ink-soft">
+						<p data-rsvp-unmailed hidden class="mt-2 text-[0.9375rem] text-ink-soft">
 							Potvrzovací e-mail se teď nepodařilo odeslat, odpověď je ale zapsaná. Až budete chtít odkazy, odešlete prosím
 							formulář znovu se stejným e-mailem.
 						</p>
@@ -162,11 +163,11 @@ const stamp =
 					<div data-rsvp-sheet hidden class="mt-6 border-2 border-ink/70 bg-white">
 						<div class="border-b-2 border-ink/70 px-4 py-2">
 							<h3 class="font-cond text-xl font-semibold tracking-wide uppercase">Prezenční listina</h3>
-							<p class="text-sm text-ink-soft">Vidí ji jen ti, kdo vyplnili přihlášku. Odkaz prosím nikomu neposílejte.</p>
+							<p class="text-[0.9375rem] text-ink-soft">Vidí ji jen ti, kdo vyplnili přihlášku. Odkaz prosím nikomu neposílejte.</p>
 						</div>
 						<table class="w-full border-collapse text-left">
 							<thead>
-								<tr class="border-b border-ink/40 text-sm text-ink-soft">
+								<tr class="border-b border-ink/40 text-[0.9375rem] text-ink-soft">
 									<th scope="col" class="w-10 px-2 py-1 text-right font-normal">č.</th>
 									<th scope="col" class="border-l-2 border-trail/50 px-3 py-1 font-normal">Jméno</th>
 									<th scope="col" class="w-20 px-2 py-1 text-center font-normal">Účast</th>
@@ -174,7 +175,7 @@ const stamp =
 							</thead>
 							<tbody data-rsvp-sheet-rows />
 						</table>
-						<p data-rsvp-sheet-sum class="border-t-2 border-ink/70 px-4 py-2 text-sm" />
+						<p data-rsvp-sheet-sum class="border-t-2 border-ink/70 px-4 py-2 text-[0.9375rem]" />
 					</div>
 
 					<details data-rsvp-lost class="mt-6">
@@ -198,7 +199,7 @@ const stamp =
 					<p data-rsvp-error hidden class="mt-4 font-semibold text-trail" role="alert" />
 
 					{(event.contactEmail || event.contactPhone) && (
-						<p class="mt-6 border-t border-ink/20 pt-3 text-sm text-ink-soft">
+						<p class="mt-6 border-t border-ink/20 pt-3 text-[0.9375rem] text-ink-soft">
 							Dotazy:{' '}
 							{event.contactEmail && (
 								<a class="underline" href={`mailto:${event.contactEmail}`}>
@@ -213,7 +214,7 @@ const stamp =
 							)}
 						</p>
 					)}
-					{event.paymentInfo && <p class="mt-3 text-sm">{event.paymentInfo}</p>}
+					{event.paymentInfo && <p class="mt-3 text-[0.9375rem]">{event.paymentInfo}</p>}
 				</div>
 			</Scrap>
 		</section>
@@ -330,14 +331,14 @@ const stamp =
 				const tr = document.createElement('tr');
 				tr.className = 'border-b border-ink/15' + (person.you ? ' bg-sticky/40' : '');
 				const number = document.createElement('td');
-				number.className = 'px-2 py-1 text-right text-sm text-ink-soft tabular-nums';
+				number.className = 'px-2 py-1 text-right text-[0.9375rem] text-ink-soft tabular-nums';
 				number.textContent = `${i + 1}.`;
 				const name = document.createElement('td');
 				name.className = 'border-l-2 border-trail/50 px-3 py-0.5 font-hand text-2xl leading-tight';
 				name.textContent = person.name;
 				if (person.you) {
 					const you = document.createElement('span');
-					you.className = 'ml-2 font-news text-sm text-ink-soft';
+					you.className = 'ml-2 font-news text-[0.9375rem] text-ink-soft';
 					you.textContent = '(vy)';
 					name.append(you);
 				}
