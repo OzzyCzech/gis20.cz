@@ -28,7 +28,6 @@ export type Clipping = {
 export const clippings: Clipping[] = [
 	{
 		kind: 'news',
-		masthead: 'Gisácký deník',
 		kicker: 'Kultura',
 		headline: 'Studenti založili punkovou skupinu Karpílní tunely',
 		body: 'Na prvním koncertu ve Vrtačce zazněly pecky jako Topologická chyba, Křovákova deformace, Souřadnice vzpoury, Šikmá konformita, Ortogonální odpor nebo Geodetická anarchie.',
@@ -49,7 +48,6 @@ export const clippings: Clipping[] = [
 	},
 	{
 		kind: 'news',
-		masthead: 'Gisácký deník',
 		kicker: 'Černá kronika',
 		headline: 'Otevíral pivo výtyčkou',
 		body: 'Nejmenovaný student geoinformatiky otevíral na měření pivo výtyčkou. Podle svědků proběhlo měření bez závad, láhev nebyla poškozená a tento úkon neměl na výsledky měření vliv.',
@@ -58,7 +56,6 @@ export const clippings: Clipping[] = [
 	},
 	{
 		kind: 'news',
-		masthead: 'Gisácký deník',
 		kicker: 'Školství',
 		headline: 'Konečně hotovo!',
 		body: 'Student odevzdal semestrálku z PAD, která měla 80 stran a 14 map. Po měsíci čekání přišla ve 2:45 ráno laxní odpověď:',
@@ -70,7 +67,6 @@ export const clippings: Clipping[] = [
 	},
 	{
 		kind: 'news',
-		masthead: 'Gisácký deník',
 		kicker: 'Černá kronika',
 		headline: 'Ztracen v Sherwoodu',
 		body: 'Známý pedagog se cestou z nechvalně proslulé Myslivny ztratil v lese přilehlém ke kolejím. Orientační schopnosti geoinformatika tentokrát selhaly.',
@@ -78,7 +74,6 @@ export const clippings: Clipping[] = [
 	},
 	{
 		kind: 'news',
-		masthead: 'Gisácký deník',
 		kicker: 'Černá kronika',
 		headline: 'Shořely mu boty!',
 		body: 'Poškozený musel zhruba dvoukilometrovou cestu absolvovat bos. Pachatel zůstává neznámý, vyšetřování komplikuje nedostatek střízlivých svědků.',
@@ -93,7 +88,6 @@ export const clippings: Clipping[] = [
 	},
 	{
 		kind: 'news',
-		masthead: 'Gisácký deník',
 		kicker: 'Kartografie',
 		headline: 'Ta hnědá je málo hnědá!',
 		body: 'Student utratil všechny peníze, které měl uložené stranou na alkohol, za tisk vrstevnic na A3 pauzovací papír a nakonec docentce nebyla hnědá barva dost hnědá!',
@@ -102,7 +96,6 @@ export const clippings: Clipping[] = [
 	},
 	{
 		kind: 'news',
-		masthead: 'Gisácký deník',
 		kicker: 'Studentský život',
 		headline: 'Sejdeme se na C6',
 		body: 'Na skutečný život připravily studenty především přednášky a semináře v C6. Účast byla dobrovolná, docházka rekordní.',
@@ -110,7 +103,6 @@ export const clippings: Clipping[] = [
 	},
 	{
 		kind: 'news',
-		masthead: 'Gisácký deník',
 		kicker: 'Terénní cvičení',
 		headline: 'Topcon GPS hledá signál už třetí hodinu',
 		body: 'Skupinka deseti studentů se už třetí hodinu marně snaží ulovit signál GPS na přístroji značky Topcon. Svačina došla v 9:15, zásoby alkoholu jsou zatím dostačující.',
@@ -119,7 +111,6 @@ export const clippings: Clipping[] = [
 	},
 	{
 		kind: 'news',
-		masthead: 'Gisácký deník',
 		kicker: 'Věda',
 		headline: 'Vysočiny mám po krk!',
 		body: 'Salám Vysočina se stal neoficiální měrnou jednotkou hloubky. Sérií praktických pokusů bylo zjištěno, kam až je možné zajít. Výsledky se mezi jednotlivci výrazně lišily.',
@@ -132,7 +123,6 @@ export const clippings: Clipping[] = [
 	},
 	{
 		kind: 'news',
-		masthead: 'Gisácký deník',
 		kicker: 'Černá kronika',
 		headline: 'Nechal otevřeno',
 		body: 'Student oslavil Den dětí otevřenými dveřmi učebny J339. Neznámý pachatel příležitosti využil a odnesl si na oslavu projektor za 60 tisíc korun.',
