@@ -1,0 +1,204 @@
+<!doctype html>
+<!--
+	Source of public/og.png (link preview image, 1200×630).
+	Regenerate after `npm run build` (uses dist/map.svg and the site's fonts):
+	"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless --hide-scrollbars \
+		--window-size=1200,630 --screenshot=public/og.png scripts/og-image.html
+-->
+<html lang="cs">
+	<head>
+		<meta charset="utf-8" />
+		<style>
+			@font-face {
+				font-family: NR;
+				src: url('../node_modules/@fontsource-variable/newsreader/files/newsreader-latin-wght-normal.woff2') format('woff2');
+				font-weight: 200 800;
+			}
+			@font-face {
+				font-family: NRx;
+				src: url('../node_modules/@fontsource-variable/newsreader/files/newsreader-latin-ext-wght-normal.woff2') format('woff2');
+				font-weight: 200 800;
+			}
+			@font-face {
+				font-family: OS;
+				src: url('../node_modules/@fontsource-variable/oswald/files/oswald-latin-wght-normal.woff2') format('woff2');
+				font-weight: 200 700;
+			}
+			@font-face {
+				font-family: OSx;
+				src: url('../node_modules/@fontsource-variable/oswald/files/oswald-latin-ext-wght-normal.woff2') format('woff2');
+				font-weight: 200 700;
+			}
+			@font-face {
+				font-family: CV;
+				src: url('../node_modules/@fontsource-variable/caveat/files/caveat-latin-wght-normal.woff2') format('woff2');
+				font-weight: 400 700;
+			}
+			@font-face {
+				font-family: CVx;
+				src: url('../node_modules/@fontsource-variable/caveat/files/caveat-latin-ext-wght-normal.woff2') format('woff2');
+				font-weight: 400 700;
+			}
+			* {
+				box-sizing: border-box;
+				margin: 0;
+			}
+			html,
+			body {
+				width: 1200px;
+				height: 630px;
+				overflow: hidden;
+			}
+			body {
+				position: relative;
+				background: #edead8 url('../dist/map.svg') -140px -420px / 1200px 1200px repeat;
+				color: #1e1a16;
+				font-family: NR, NRx, Georgia, serif;
+			}
+			.paper {
+				position: absolute;
+				left: 64px;
+				top: 52px;
+				width: 820px;
+				height: 526px;
+				padding: 30px 44px;
+				background: #f2e9d3;
+				transform: rotate(-1.4deg);
+				box-shadow:
+					0 1px 2px rgb(30 26 22 / 0.18),
+					0 14px 30px -10px rgb(30 26 22 / 0.35);
+			}
+			.tape {
+				position: absolute;
+				width: 120px;
+				height: 34px;
+				background: rgb(255 250 225 / 0.65);
+				box-shadow: 0 1px 2px rgb(30 26 22 / 0.12);
+			}
+			.row {
+				display: flex;
+				justify-content: space-between;
+				font-size: 19px;
+			}
+			.top {
+				border-bottom: 1px solid #1e1a16;
+				padding-bottom: 4px;
+				font-style: italic;
+			}
+			.masthead {
+				padding: 6px 0 4px;
+				text-align: center;
+				font-size: 66px;
+				line-height: 1;
+				font-weight: 800;
+				letter-spacing: -0.02em;
+			}
+			.dateline {
+				border-top: 4px double #1e1a16;
+				border-bottom: 4px double #1e1a16;
+				padding: 4px 0;
+			}
+			h1 {
+				margin-top: 26px;
+				font-size: 132px;
+				line-height: 0.86;
+				font-weight: 800;
+				letter-spacing: -0.035em;
+			}
+			.lead {
+				margin-top: 26px;
+				font-size: 31px;
+				line-height: 1.25;
+				font-style: italic;
+			}
+			.calendar {
+				position: absolute;
+				right: 62px;
+				top: 70px;
+				width: 236px;
+				padding-bottom: 20px;
+				background: #fffdf6;
+				text-align: center;
+				transform: rotate(3deg);
+				box-shadow:
+					0 1px 2px rgb(30 26 22 / 0.18),
+					0 14px 26px -10px rgb(30 26 22 / 0.35);
+			}
+			.calendar .month {
+				padding: 22px 0 10px;
+				background: #c8332f;
+				color: #fff;
+				font-family: OS, OSx, sans-serif;
+				font-size: 30px;
+				font-weight: 600;
+			}
+			.calendar .days {
+				margin-top: 12px;
+				font-family: OS, OSx, sans-serif;
+				font-size: 72px;
+				line-height: 1;
+				font-weight: 700;
+				letter-spacing: -0.02em;
+			}
+			.calendar .weekday {
+				margin-top: 4px;
+				font-size: 24px;
+			}
+			.pin {
+				position: absolute;
+				left: 50%;
+				top: -26px;
+				width: 46px;
+				margin-left: -23px;
+				filter: drop-shadow(0 3px 2px rgb(30 26 22 / 0.3));
+			}
+			.note {
+				position: absolute;
+				right: 84px;
+				top: 362px;
+				width: 210px;
+				height: 200px;
+				padding: 26px 20px;
+				background: #f6e27f;
+				transform: rotate(-4deg);
+				font-family: CV, CVx, cursive;
+				font-size: 40px;
+				line-height: 1.05;
+				box-shadow:
+					0 1px 2px rgb(30 26 22 / 0.15),
+					0 12px 22px -10px rgb(30 26 22 / 0.35);
+			}
+			.note b {
+				display: block;
+				margin-top: 10px;
+				font-size: 52px;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="paper">
+			<div class="tape" style="left: -36px; top: -10px; transform: rotate(-35deg)"></div>
+			<div class="tape" style="right: -36px; top: -10px; transform: rotate(35deg)"></div>
+			<div class="row top"><span>Ročník XX</span><span>Mimořádné vydání</span></div>
+			<p class="masthead">Gisácký deník</p>
+			<div class="row dateline"><span>Ostrava – Dolní Bojanovice</span><span>Sobota 19. června 2027</span></div>
+			<h1>Sraz po 20&nbsp;letech</h1>
+			<p class="lead">Absolventi geoinformatiky z&nbsp;VŠB-TUO se sejdou ve vinném sklepě v&nbsp;Dolních Bojanovicích.</p>
+		</div>
+
+		<div class="calendar">
+			<svg class="pin" viewBox="0 0 64 64" aria-hidden="true">
+				<path d="M32 59c-6-10-19-19-19-33a19 19 0 0 1 38 0c0 14-13 23-19 33z" fill="#c8332f" stroke="#1e1a16" stroke-width="2.5" stroke-linejoin="round" />
+				<g fill="#fbfaf5" stroke="#fbfaf5" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+					<path d="M24.5 15h15c0 8-3 12.5-7.5 12.5S24.5 23 24.5 15z" />
+					<path d="M32 27.5V36M27 36h10" fill="none" />
+				</g>
+			</svg>
+			<p class="month">Červen 2027</p>
+			<p class="days">19.–20.</p>
+			<p class="weekday">sobota – neděle</p>
+		</div>
+
+		<div class="note">Víno i jídlo <b>1 100 Kč</b></div>
+	</body>
+</html>

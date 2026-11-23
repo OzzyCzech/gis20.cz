@@ -35,6 +35,7 @@ The whole page is a noticeboard: paper scraps lying on a fictional topographic m
 - `src/components/RouteMap.astro` – route map VŠB-TUO → Dolní Bojanovice with graticule and scale bar
 - `src/components/Countdown.astro` – days-left counter, computed in the browser
 - `src/pages/sraz.ics.ts` – calendar file generated at build time (`/sraz.ics`)
+- `scripts/og-image.html` – source of the link preview image `public/og.png`; the regenerate command is in the file
 
 ## Deploy
 
