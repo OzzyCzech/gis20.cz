@@ -4,6 +4,8 @@
 // Publicly the API only returns a count. Names are listed only for a registrant's personal sheet link,
 // and e-mail addresses, phones and notes never leave the database.
 
+import { type Block, facts, links, p, renderHtml, renderText, section, signature, stamp } from './mail';
+
 interface D1Result<T> {
 	results: T[];
 }
@@ -40,7 +42,9 @@ type Registration = { id: number; email: string; name: string; status: Status; t
 
 const EVENT = {
 	when: '19.–20. června 2027',
-	where: 've vinném sklepě v Dolních Bojanovicích',
+	place: 'vinný sklep, Dolní Bojanovice',
+	// Same map link as on the site (mapLinks in src/data/event.ts).
+	map: 'https://mapy.com/fnc/v1/showmap?mapset=outdoor&center=17.0220803,48.8625189&zoom=17&marker=true',
 };
 // Classmates write to each other informally (tykání); the texts avoid gendered verb forms and the vocative,
 // since the name field can hold anything from a full name to a nickname.
@@ -215,15 +219,11 @@ async function answerLink(env: Env, data: Record<string, unknown>): Promise<[unk
 	const row = await findByEmail(env, email);
 	if (row) {
 		await sendMail(env, email, 'Sraz gisáků: odkaz na změnu odpovědi', [
-			'Ahoj,',
-			'',
-			`přišla nám žádost o odkaz na změnu odpovědi na sraz (přihláška pod jménem ${row.name}).`,
-			'Odpověď změníš tady:',
-			answerUrl(env, row.token),
-			'',
-			'Pokud to nebyl tvůj požadavek, stačí tenhle e-mail ignorovat. Odpověď zůstává, jak byla.',
-			'',
-			SIGNATURE,
+			p('Ahoj,'),
+			p('přišla nám žádost o odkaz na změnu odpovědi na sraz pro přihlášku pod jménem ', { b: row.name }, '.'),
+			links({ label: 'Změnit odpověď', href: answerUrl(env, row.token), intro: 'Odpověď změníš tady:', primary: true }),
+			p('Pokud to nebyl tvůj požadavek, stačí tenhle e-mail ignorovat. Odpověď zůstává, jak byla.'),
+			signature(SIGNATURE),
 		]);
 	}
 	// Same answer whether or not the address is registered, so the endpoint can't be used to probe addresses.
@@ -236,39 +236,37 @@ async function sendAnswerMail(
 	env: Env,
 	row: { email: string; name: string; status: Status; token: string; view_token: string },
 ): Promise<boolean> {
-	const links = (sheetIntro: string, changeIntro: string) => [
-		sheetIntro,
-		sheetUrl(env, row.view_token),
-		'',
-		changeIntro,
-		answerUrl(env, row.token),
-		'(Oba odkazy jsou jen pro tebe, nikomu je prosím neposílej.)',
+	const personal = (sheetIntro: string, changeIntro: string) => [
+		section('Jen pro tebe', 'Tyhle odkazy prosím nikomu neposílej.'),
+		links(
+			{ label: 'Prezenční listina', href: sheetUrl(env, row.view_token), intro: sheetIntro },
+			{ label: 'Změnit odpověď', href: answerUrl(env, row.token), intro: changeIntro },
+		),
 	];
 	if (row.status === 'yes') {
 		return sendMail(env, row.email, 'Sraz gisáků: počítáme s tebou!', [
-			'Ahoj,',
-			'',
-			`paráda, že dorazíš! Přihlášku máme zapsanou pod jménem ${row.name}.`,
-			'',
-			`Uvidíme se ${EVENT.when} ${EVENT.where}. Po dvaceti letech bude co probírat.`,
-			'',
-			`Termín si ulož do kalendáře: ${new URL('sraz.ics', env.SITE_URL)}`,
-			`Všechno ostatní najdeš na ${env.SITE_URL}`,
-			'',
-			...links('Kdo další přijede, uvidíš na prezenční listině:', 'Kdyby se ti do toho nakonec něco připletlo, odpověď změníš tady:'),
-			'',
-			'Těšíme se na tebe!',
-			SIGNATURE,
+			stamp('Zapsáno'),
+			p('Ahoj,'),
+			p('paráda, že dorazíš! Přihlášku máme zapsanou pod jménem ', { b: row.name }, '. Po dvaceti letech bude co probírat.'),
+			facts([
+				['Kdy', EVENT.when, new URL('sraz.ics', env.SITE_URL).href],
+				['Kde', EVENT.place, EVENT.map],
+			]),
+			links(
+				{ label: 'Uložit do kalendáře', href: new URL('sraz.ics', env.SITE_URL).href, primary: true },
+				{ label: 'Pozvánka na webu', href: env.SITE_URL },
+			),
+			...personal('Kdo další přijede, uvidíš na prezenční listině:', 'Kdyby se ti do toho něco připletlo, odpověď změníš tady:'),
+			p('Těšíme se na tebe!'),
+			signature(SIGNATURE),
 		]);
 	}
 	return sendMail(env, row.email, 'Sraz gisáků: škoda, že to nevyjde', [
-		'Ahoj,',
-		'',
-		`díky za odpověď. Škoda, že to nevyjde, budeš chybět! Omluvenku máme zapsanou pod jménem ${row.name}.`,
-		'',
-		...links('Kdo přijede, uvidíš na prezenční listině:', 'Kdyby se to změnilo, odpověď změníš tady:'),
-		'',
-		SIGNATURE,
+		stamp('Omluvenka'),
+		p('Ahoj,'),
+		p('díky za odpověď. Škoda, že to nevyjde, budeš chybět! Omluvenku máme zapsanou pod jménem ', { b: row.name }, '.'),
+		...personal('Kdo přijede, uvidíš na prezenční listině:', 'Kdyby se to změnilo, odpověď změníš tady:'),
+		signature(SIGNATURE),
 	]);
 }
 
@@ -290,7 +288,7 @@ const origin = (env: Env) => new URL(env.SITE_URL).origin;
 const answerUrl = (env: Env, token: string) => `${origin(env)}/#odpoved=${token}`;
 const sheetUrl = (env: Env, token: string) => `${origin(env)}/#listina=${token}`;
 
-async function sendMail(env: Env, to: string, subject: string, lines: string[]): Promise<boolean> {
+async function sendMail(env: Env, to: string, subject: string, blocks: Block[]): Promise<boolean> {
 	if (!env.RESEND_API_KEY) {
 		console.warn('RESEND_API_KEY is not set, e-mail not sent');
 		return false;
@@ -298,7 +296,7 @@ async function sendMail(env: Env, to: string, subject: string, lines: string[]):
 	const response = await fetch('https://api.resend.com/emails', {
 		method: 'POST',
 		headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-		body: JSON.stringify({ from: env.MAIL_FROM, to: [to], subject, text: lines.join('\n') }),
+		body: JSON.stringify({ from: env.MAIL_FROM, to: [to], subject, text: renderText(blocks), html: renderHtml(subject, blocks, env.SITE_URL) }),
 	});
 	if (!response.ok) console.error('Resend error', response.status, await response.text());
 	return response.ok;
