@@ -237,7 +237,7 @@ async function answerLink(env: Env, data: Record<string, unknown>): Promise<[unk
 const personalLinks = (env: Env, token: string, viewToken: string, sheetIntro: string, changeIntro: string) => [
 	section('Jen pro tebe', 'Tyhle odkazy prosím nikomu neposílej.'),
 	links(
-		{ label: 'Prezenční listina', href: sheetUrl(env, viewToken), intro: sheetIntro },
+		{ label: 'Prezenční listina', href: sheetUrl(env, viewToken), intro: sheetIntro, primary: true },
 		{ label: 'Změnit odpověď', href: answerUrl(env, token), intro: changeIntro },
 	),
 ];
@@ -266,7 +266,7 @@ async function sendAnswerMail(
 				['Kde', EVENT.place, EVENT.map],
 			]),
 			links(
-				{ label: 'Uložit do kalendáře', href: new URL('sraz.ics', env.SITE_URL).href, primary: true },
+				{ label: 'Uložit do kalendáře', href: new URL('sraz.ics', env.SITE_URL).href },
 				{ label: 'Pozvánka na webu', href: env.SITE_URL },
 			),
 			...personal('Kdo další přijede, uvidíš na prezenční listině:', 'Kdyby se ti do toho něco připletlo, odpověď změníš tady:'),
