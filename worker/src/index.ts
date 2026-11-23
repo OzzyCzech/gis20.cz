@@ -37,10 +37,12 @@ interface Env {
 type Registration = { id: number; email: string; name: string; status: 'yes' | 'no'; token: string };
 
 const EVENT = {
-	title: 'Sraz gisáků po 20 letech',
 	when: '19.–20. června 2027',
-	where: 'vinný sklep v Dolních Bojanovicích',
+	where: 've vinném sklepě v Dolních Bojanovicích',
 };
+// Classmates write to each other informally (tykání); the texts avoid gendered verb forms and the vocative,
+// since the name field can hold anything from a full name to a nickname.
+const SIGNATURE = 'Organizátoři srazu';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const PHONE_RE = /^\+?\d{9,15}$/;
@@ -166,18 +168,21 @@ async function register(env: Env, data: Record<string, unknown>): Promise<[unkno
 	}
 
 	// The cancel token only ever travels by e-mail, so knowing someone's address is not enough to cancel them.
-	const mailed = await sendMail(env, email, `Přihláška na ${EVENT.title} je zapsaná`, [
-		`Ahoj ${name},`,
+	const mailed = await sendMail(env, email, 'Sraz gisáků: počítáme s tebou!', [
+		'Ahoj,',
 		'',
-		`přihláška na ${EVENT.title} je zapsaná. Sejdeme se ${EVENT.when}, ${EVENT.where}.`,
+		`paráda, že dorazíš! Přihlášku máme zapsanou pod jménem ${name}.`,
 		'',
-		`Pozvánka: ${env.SITE_URL}`,
-		`Termín do kalendáře: ${new URL('sraz.ics', env.SITE_URL)}`,
+		`Uvidíme se ${EVENT.when} ${EVENT.where}. Po dvaceti letech bude co probírat.`,
 		'',
-		'Kdyby to nakonec nevyšlo, odhlásit se jde tady:',
+		`Termín si ulož do kalendáře: ${new URL('sraz.ics', env.SITE_URL)}`,
+		`Všechno ostatní najdeš na ${env.SITE_URL}`,
+		'',
+		'Kdyby se ti do toho nakonec něco připletlo, odhlásit se můžeš tady:',
 		cancelUrl(env, token),
 		'',
-		'Gisácký deník',
+		'Těšíme se na tebe!',
+		SIGNATURE,
 	]);
 	return [{ ok: true, mailed, count: await count(env) }, 200];
 }
@@ -202,15 +207,16 @@ async function cancelLink(env: Env, data: Record<string, unknown>): Promise<[unk
 
 	const row = await findByEmail(env, email);
 	if (row?.status === 'yes') {
-		await sendMail(env, email, `Odhlášení: ${EVENT.title}`, [
-			`Ahoj ${row.name},`,
+		await sendMail(env, email, 'Sraz gisáků: odkaz na odhlášení', [
+			'Ahoj,',
 			'',
-			`přišla žádost o odhlášení z akce ${EVENT.title}. Odhlásit se jde tady:`,
+			`přišla nám žádost o odkaz na odhlášení ze srazu (přihláška pod jménem ${row.name}).`,
+			'Pokud to nevyjde, odhlásit se můžeš tady:',
 			cancelUrl(env, row.token),
 			'',
-			'Pokud o odhlášení nikdo nežádal, stačí tenhle e-mail ignorovat.',
+			'Pokud to nebyl tvůj požadavek, stačí tenhle e-mail ignorovat. Přihláška dál platí.',
 			'',
-			'Gisácký deník',
+			SIGNATURE,
 		]);
 	}
 	// Same answer whether or not the address is registered, so the endpoint can't be used to probe addresses.
