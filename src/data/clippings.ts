@@ -45,6 +45,7 @@ export const clippings: Clipping[] = [
 		kicker: 'Kultura',
 		headline: 'Studenti založili punkovou skupinu Karpílní tunely',
 		body: 'Na prvním koncertu ve Vrtačce zazněly pecky jako Topologická chyba, Křovákova deformace, Souřadnice vzpoury, Šikmá konformita, Ortogonální odpor nebo Geodetická anarchie.',
+		footer: 'Bratři v Kliku',
 		image: {
 			file: 'bratri-v-kliku.png',
 			alt: 'Potisk trička: tři kreslení kluci v objetí, na tričkách nápis GIS, pod nimi Bratři v Kliku',
@@ -69,6 +70,7 @@ export const clippings: Clipping[] = [
 		kicker: 'Černá kronika',
 		headline: 'Ztracen v Sherwoodu',
 		body: 'Známý pedagog se cestou z nechvalně proslulé Myslivny ztratil v lese přilehlém ke kolejím. Orientační schopnosti geoinformatika tentokrát selhaly.',
+		footer: 'Měl jsem zůstat u Linuxu',
 	},
 	{
 		kind: 'classified',
@@ -84,6 +86,7 @@ export const clippings: Clipping[] = [
 		kicker: 'Černá kronika',
 		headline: 'Otevíral pivo výtyčkou',
 		body: 'Nejmenovaný student geoinformatiky otevíral na měření pivo výtyčkou. Podle svědků proběhlo měření bez závad, láhev nebyla poškozená a tento úkon neměl na výsledky měření vliv.',
+		footer: 'Pivo otevřu čímkoliv',
 		art: 'pole',
 	},
 	{
@@ -106,8 +109,9 @@ export const clippings: Clipping[] = [
 		kind: 'news',
 		masthead: 'Gisácký deník',
 		kicker: 'Terénní cvičení',
-		headline: 'GPS hledá družice už třetí hodinu',
-		body: 'Podle neoficiálních informací se skupina nachází někde mezi dvěma vrstevnicemi. Svačina došla v 9:15.',
+		headline: 'Topcon GPS hledá signál už třetí hodinu',
+		body: 'Skupinka deseti studentů se už třetí hodinu marně snaží ulovit signál GPS na přístroji značky Topcon. Svačina došla v 9:15, zásoby alkoholu jsou zatím dostačující.',
+		footer: 'Pak to naklikáme v ArcGISu',
 		art: 'satellite',
 	},
 	{
