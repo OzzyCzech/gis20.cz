@@ -4,7 +4,8 @@
 // Publicly the API only returns a count. Names are listed only for a registrant's personal sheet link,
 // and e-mail addresses, phones and notes never leave the database.
 
-import { type Block, facts, links, p, renderHtml, renderText, section, signature, stamp } from './mail';
+import { answerMail, type Guest, linksMail, type Mail, type Status } from './emails.ts';
+import { renderHtml, renderText } from './mail.ts';
 
 interface D1Result<T> {
 	results: T[];
@@ -37,18 +38,7 @@ interface Env {
 	ALLOWED_ORIGINS: string;
 }
 
-type Status = 'yes' | 'no';
 type Registration = { id: number; email: string; name: string; status: Status; token: string; view_token: string | null };
-
-const EVENT = {
-	when: '19.–20. června 2027',
-	place: 'vinný sklep, Dolní Bojanovice',
-	// Same map link as on the site (mapLinks in src/data/event.ts).
-	map: 'https://mapy.com/fnc/v1/showmap?mapset=outdoor&center=17.0220803,48.8625189&zoom=17&marker=true',
-};
-// Classmates write to each other informally (tykání); the texts avoid gendered verb forms and the vocative,
-// since the name field can hold anything from a full name to a nickname.
-const SIGNATURE = 'Zip, Maja, Vojta, Mini, Ozzy, Lenka a ostatní';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const PHONE_RE = /^\+?\d{9,15}$/;
@@ -220,27 +210,11 @@ async function answerLink(env: Env, data: Record<string, unknown>): Promise<[unk
 	const row = await findByEmail(env, email);
 	if (row) {
 		const viewToken = await ensureViewToken(env, row);
-		await sendMail(env, email, 'Sraz gisáků: tvoje odkazy', [
-			p('Ahoj,'),
-			p('přišla nám žádost o odkazy k přihlášce na sraz pod jménem ', { b: row.name }, '.'),
-			...personalLinks(env, row.token, viewToken, 'Kdo přijede, uvidíš na prezenční listině:', 'Odpověď změníš tady:'),
-			p('Pokud to nebyl tvůj požadavek, stačí tenhle e-mail ignorovat. Odpověď zůstává, jak byla.'),
-			signature(SIGNATURE),
-		]);
+		await sendMail(env, email, linksMail(env.SITE_URL, { ...row, view_token: viewToken }));
 	}
 	// Same answer whether or not the address is registered, so the endpoint can't be used to probe addresses.
 	return [{ ok: true }, 200];
 }
-
-// Confirmation after every answer or change. Both links only ever travel by e-mail, so knowing someone's
-// address is not enough to change their answer or to read the sheet.
-const personalLinks = (env: Env, token: string, viewToken: string, sheetIntro: string, changeIntro: string) => [
-	section('Jen pro tebe', 'Tyhle odkazy prosím nikomu neposílej.'),
-	links(
-		{ label: 'Prezenční listina', href: sheetUrl(env, viewToken), intro: sheetIntro, primary: true },
-		{ label: 'Změnit odpověď', href: answerUrl(env, token), intro: changeIntro },
-	),
-];
 
 // Rows created before the sheet existed may lack a view token; give them one on first use.
 async function ensureViewToken(env: Env, row: Registration): Promise<string> {
@@ -251,36 +225,9 @@ async function ensureViewToken(env: Env, row: Registration): Promise<string> {
 	return viewToken;
 }
 
-async function sendAnswerMail(
-	env: Env,
-	row: { email: string; name: string; status: Status; token: string; view_token: string },
-): Promise<boolean> {
-	const personal = (sheetIntro: string, changeIntro: string) => personalLinks(env, row.token, row.view_token, sheetIntro, changeIntro);
-	if (row.status === 'yes') {
-		return sendMail(env, row.email, 'Sraz gisáků: počítáme s tebou!', [
-			stamp('Zapsáno'),
-			p('Ahoj,'),
-			p('paráda, že dorazíš! Přihlášku máme zapsanou pod jménem ', { b: row.name }, '. Po dvaceti letech bude co probírat.'),
-			facts([
-				['Kdy', EVENT.when, new URL('sraz.ics', env.SITE_URL).href],
-				['Kde', EVENT.place, EVENT.map],
-			]),
-			links(
-				{ label: 'Uložit do kalendáře', href: new URL('sraz.ics', env.SITE_URL).href },
-				{ label: 'Pozvánka na webu', href: env.SITE_URL },
-			),
-			...personal('Kdo další přijede, uvidíš na prezenční listině:', 'Kdyby se ti do toho něco připletlo, odpověď změníš tady:'),
-			p('Těšíme se na tebe!'),
-			signature(SIGNATURE),
-		]);
-	}
-	return sendMail(env, row.email, 'Sraz gisáků: škoda, že to nevyjde', [
-		stamp('Omluvenka'),
-		p('Ahoj,'),
-		p('díky za odpověď. Škoda, že to nevyjde, budeš chybět! Omluvenku máme zapsanou pod jménem ', { b: row.name }, '.'),
-		...personal('Kdo přijede, uvidíš na prezenční listině:', 'Kdyby se to změnilo, odpověď změníš tady:'),
-		signature(SIGNATURE),
-	]);
+// Confirmation after every answer or change; the texts are in emails.ts.
+function sendAnswerMail(env: Env, guest: Guest & { email: string }): Promise<boolean> {
+	return sendMail(env, guest.email, answerMail(env.SITE_URL, guest));
 }
 
 async function attendees(env: Env, data: Record<string, unknown>): Promise<[unknown, number]> {
@@ -297,19 +244,17 @@ async function attendees(env: Env, data: Record<string, unknown>): Promise<[unkn
 	return [{ people: results.map((row) => ({ name: row.name, coming: row.status === 'yes', you: row.id === viewer.id })) }, 200];
 }
 
-const origin = (env: Env) => new URL(env.SITE_URL).origin;
-const answerUrl = (env: Env, token: string) => `${origin(env)}/#odpoved=${token}`;
-const sheetUrl = (env: Env, token: string) => `${origin(env)}/#listina=${token}`;
-
-async function sendMail(env: Env, to: string, subject: string, blocks: Block[]): Promise<boolean> {
+async function sendMail(env: Env, to: string, { subject, blocks }: Mail): Promise<boolean> {
 	if (!env.RESEND_API_KEY) {
 		console.warn('RESEND_API_KEY is not set, e-mail not sent');
 		return false;
 	}
+	// The footer's contact is the sender address itself (MAIL_FROM is "Name <address>").
+	const footer = { siteUrl: env.SITE_URL, contact: env.MAIL_FROM.match(/<(.+)>/)?.[1] ?? env.MAIL_FROM };
 	const response = await fetch('https://api.resend.com/emails', {
 		method: 'POST',
 		headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-		body: JSON.stringify({ from: env.MAIL_FROM, to: [to], subject, text: renderText(blocks), html: renderHtml(subject, blocks, env.SITE_URL) }),
+		body: JSON.stringify({ from: env.MAIL_FROM, to: [to], subject, text: renderText(blocks, footer), html: renderHtml(subject, blocks, footer) }),
 	});
 	if (!response.ok) console.error('Resend error', response.status, await response.text());
 	return response.ok;

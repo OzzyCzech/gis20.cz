@@ -11,6 +11,7 @@ Built with Astro and Tailwind CSS v4.
 | `npm run dev`     | Dev server at `http://localhost:4321`        |
 | `npm run build`   | Build the static site into `./dist/`         |
 | `npm run preview` | Preview the production build locally         |
+| `npm run mail:preview` | Preview the RSVP e-mails at `http://localhost:4322` |
 
 ## Editing content
 
@@ -21,6 +22,8 @@ confirmation e-mail (Resend) brings two personal links: the attendance sheet and
 either way. Anyone who lost them can request the answer link again on the slip.
 Publicly the page only shows the head count. Without `rsvpApi` the slip renders only in dev.
 `rsvpDeadline` and `paymentInfo` are shown on the slip when filled; `contactEmail` and `contactPhone` in the footer.
+The texts of the RSVP e-mails are in `worker/src/emails.ts` (layout in `worker/src/mail.ts`); `npm run mail:preview`
+shows all of them, as HTML and plain text, and picks up every change after a page reload.
 
 Coordinates in `venueCoords` are the wine cellar itself; they drive the map pin, the map links and the distance.
 
