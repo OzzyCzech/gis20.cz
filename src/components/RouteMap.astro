@@ -1,4 +1,6 @@
 ---
+import type { ImageMetadata } from 'astro';
+import { getImage } from 'astro:assets';
 import { drunkRoute } from '../data/drunkRoute';
 import { distanceKm, event, type LatLon } from '../data/event';
 
@@ -35,9 +37,11 @@ const backLabel = drunkRoute[128];
 const lost = drunkRoute[77];
 
 // Optional VŠB logo next to the campus marker: drop src/assets/logo-vsb.{svg,png,webp} into the project.
-const logoFiles = import.meta.glob<string>('../assets/logo-vsb.{svg,png,jpg,webp}', { eager: true, query: '?url', import: 'default' });
-const logoUrl = Object.values(logoFiles)[0];
+const logoFiles = import.meta.glob<{ default: ImageMetadata }>('../assets/logo-vsb.{svg,png,jpg,webp}', { eager: true });
+const logoSrc = Object.values(logoFiles)[0]?.default;
 const logoBox = { x: school.x - 108, y: school.y - 36, size: 66 };
+// Shrunk to 3× its size on the map (sharp on retina screens) and converted to WebP.
+const logoUrl = logoSrc && (await getImage({ src: logoSrc, width: logoBox.size * 3, format: 'webp' })).src;
 const cemetery = drunkRoute[193];
 
 // Direction arrows: "tam" points from Ostrava to the cellar, "zpět" back along the
@@ -103,10 +107,10 @@ const phiLabel = String(Math.round(phi0 * 1000) / 1000);
 			{backArrows.map((a) => <path d={arrowHead} transform={`translate(${a.x} ${a.y}) rotate(${a.a})`} />)}
 		</g>
 		<g class="fill-trail font-hand" font-weight="700">
-			<text x={backLabel[0] + 12} y={backLabel[1] + 8} font-size="24" transform={`rotate(-8 ${backLabel[0]} ${backLabel[1]})`}>
+			<text x={backLabel[0] + 12} y={backLabel[1] + 8} font-size="24" class="max-sm:text-[27px]" transform={`rotate(-8 ${backLabel[0]} ${backLabel[1]})`}>
 				zpět ≈ {drunkKm} km
 			</text>
-			<text x={lost[0] - 8} y={lost[1] - 8} text-anchor="end" font-size="19" transform={`rotate(-8 ${lost[0]} ${lost[1]})`}>
+			<text x={lost[0] - 8} y={lost[1] - 8} text-anchor="end" font-size="19" class="max-sm:text-[23px]" transform={`rotate(-8 ${lost[0]} ${lost[1]})`}>
 				Kde to ku... su?
 			</text>
 		</g>
@@ -119,7 +123,7 @@ const phiLabel = String(Math.round(phi0 * 1000) / 1000);
 				stroke="currentColor"
 				stroke-width="1.1"
 				fill="none"></path>
-			<text y="26" text-anchor="middle" class="fill-ink-soft font-news" font-size="13" font-style="italic">Hřbitov</text>
+			<text y="26" text-anchor="middle" class="fill-ink-soft font-news max-sm:text-[16px]" font-size="13" font-style="italic">Hřbitov</text>
 		</g>
 
 		<line
@@ -134,7 +138,7 @@ const phiLabel = String(Math.round(phi0 * 1000) / 1000);
 		></line>
 		<path d={arrowHead} class="fill-water" transform={`translate(${thereArrow.x} ${thereArrow.y}) rotate(${thereArrow.a}) scale(1.15)`} />
 		<g transform={`translate(${mid.x} ${mid.y}) rotate(${angle})`}>
-			<text y="-12" text-anchor="middle" class="fill-water font-cond" font-size="17" font-weight="600">tam ≈ {km} km</text>
+			<text y="-12" text-anchor="middle" class="fill-water font-cond max-sm:text-[22px]" font-size="17" font-weight="600">tam ≈ {km} km</text>
 		</g>
 
 		{
@@ -146,7 +150,6 @@ const phiLabel = String(Math.round(phi0 * 1000) / 1000);
 					width={logoBox.size}
 					height={logoBox.size}
 					preserveAspectRatio="xMidYMid meet"
-					aria-label="Logo VŠB – Technické univerzity Ostrava"
 				/>
 			)
 		}
@@ -154,8 +157,8 @@ const phiLabel = String(Math.round(phi0 * 1000) / 1000);
 		<g transform={`translate(${school.x} ${school.y})`}>
 			<circle r="9" class="fill-news stroke-ink" stroke-width="2.5"></circle>
 			<circle r="3.5" class="fill-ink"></circle>
-			<text x="16" y="-4" class="fill-ink font-news" font-size="21" font-weight="700">VŠB-TUO</text>
-			<text x="16" y="16" class="fill-ink-soft font-mono" font-size="12">Ostrava-Poruba</text>
+			<text x="16" y="-4" class="fill-ink font-news max-sm:text-[23px]" font-size="21" font-weight="700">VŠB-TUO</text>
+			<text x="16" y="16" class="fill-ink-soft font-mono max-sm:text-[14px]" font-size="12">Ostrava-Poruba</text>
 		</g>
 
 		<!-- Glass of red wine next to the venue -->
@@ -174,8 +177,8 @@ const phiLabel = String(Math.round(phi0 * 1000) / 1000);
 		<g transform={`translate(${town.x} ${town.y})`}>
 			<circle r="22" class="fill-trail/15"></circle>
 			<circle r="10" class="fill-trail stroke-news" stroke-width="3"></circle>
-			<text x="18" y="30" class="fill-ink font-news" font-size="21" font-weight="700">Dolní Bojanovice</text>
-			<text x="18" y="48" class="fill-ink-soft font-mono" font-size="12">sraz · {event.start.y}</text>
+			<text x="18" y="30" class="fill-ink font-news max-sm:text-[23px]" font-size="21" font-weight="700">Dolní Bojanovice</text>
+			<text x="18" y="48" class="fill-ink-soft font-mono max-sm:text-[14px]" font-size="12">sraz · {event.start.y}</text>
 		</g>
 
 		<g transform={`translate(${width - 24} 28)`} class="fill-ink text-ink">

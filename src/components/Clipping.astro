@@ -3,6 +3,7 @@ import type { ImageMetadata } from 'astro';
 import { Image } from 'astro:assets';
 import type { Clipping } from '../data/clippings';
 import { rng } from '../lib/scrap';
+import { nbsp } from '../lib/text';
 import ClippingArt from './ClippingArt.astro';
 import Scrap from './Scrap.astro';
 
@@ -11,7 +12,15 @@ interface Props {
 	seed: number;
 }
 
-const { clipping: c, seed } = Astro.props;
+const { clipping, seed } = Astro.props;
+// No one-letter word at a line end (`after` is HTML and stays as it is).
+const c: Clipping = {
+	...clipping,
+	headline: nbsp(clipping.headline),
+	deck: clipping.deck && nbsp(clipping.deck),
+	body: clipping.body && nbsp(clipping.body),
+	lyrics: clipping.lyrics?.map(nbsp),
+};
 
 // Scattered look on wider screens: nudge each scrap a little off the grid.
 const rand = rng(seed * 31 + 5);
@@ -30,7 +39,7 @@ const ruler = scale && {
 		.map((t) => `M${t.x.toFixed(1)} 0.6v${t.h}`)
 		.join(''),
 };
-const footers = c.footer === undefined ? [] : Array.isArray(c.footer) ? c.footer : [c.footer];
+const footers = (c.footer === undefined ? [] : Array.isArray(c.footer) ? c.footer : [c.footer]).map(nbsp);
 const attach = seed % 3 === 0 ? 'tape' : seed % 3 === 1 ? 'pin' : 'none';
 
 // Optional photo; a missing file simply leaves the clipping without it.
@@ -74,7 +83,7 @@ const photo = c.image && Object.entries(photos).find(([path]) => path.endsWith(`
 						<span class="tabular-nums not-italic">{c.date}</span>
 					</div>
 				)}
-				<p class="font-cond text-[0.8125rem] font-semibold tracking-wide text-trail">{c.kicker}</p>
+				<p class="font-cond text-[0.8125rem] font-semibold tracking-wide text-trail-dark">{c.kicker}</p>
 				<h3
 					class:list={[
 						'mt-1 leading-[1.05] font-bold tracking-tight text-balance',

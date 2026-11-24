@@ -39,26 +39,25 @@ const stamp =
 				class="w-full max-w-xl"
 				innerClass="p-3"
 			>
-				<div class="border-2 border-dashed border-ink/60 px-4 pt-5 pb-7 sm:px-8">
+				<div class="relative border-2 border-dashed border-ink/60 px-4 pt-5 pb-7 sm:px-8">
+					{/* Head count as a tag pinned over the coupon's corner, out of the text flow so the subtitle keeps
+					    the full width on phones; filled in by the script. */}
+					{/* On the narrowest phones the label goes lower-case and the tag slimmer, so it clears the heading. */}
+					<p data-rsvp-count hidden class="absolute top-3 right-3 rotate-3 rounded-sm border-2 border-ink/80 bg-news px-2.5 pt-1.5 pb-2 text-center leading-none shadow-sm sm:top-4 sm:right-5 sm:px-3">
+						<strong class="block font-cond text-4xl font-semibold" />
+						<span class="mt-1 block text-xs text-ink-soft sm:tracking-wide sm:uppercase">přihlášeno</span>
+					</p>
 					<p class="text-[0.9375rem] text-ink-soft italic" aria-hidden="true">
 						✂ zde odstřihněte
 					</p>
-					<div class="mt-2 flex items-start justify-between gap-4">
-						<div>
-							<h2 id="prihlaska-nadpis" class="text-[2rem] leading-tight font-bold">
-								Přihláška
-							</h2>
-							<p class="mt-1 text-lg">
-								na sraz {event.start.d}.–{event.end.d}.&nbsp;{event.start.m}.&nbsp;{event.start.y}, {event.venue.toLowerCase()},{' '}
-								<span class="whitespace-nowrap">{event.town}</span>
-							</p>
-						</div>
-						{/* Head count as a tag pinned to the coupon's corner; filled in by the script. */}
-						<p data-rsvp-count hidden class="mt-1 shrink-0 rotate-3 rounded-sm border-2 border-ink/80 bg-news px-3 pt-1.5 pb-2 text-center leading-none shadow-sm">
-							<strong class="block font-cond text-4xl font-semibold" />
-							<span class="mt-1 block text-xs tracking-wide text-ink-soft uppercase">přihlášeno</span>
-						</p>
-					</div>
+					<h2 id="prihlaska-nadpis" class="mt-2 text-[2rem] leading-tight font-bold">
+						Přihláška
+					</h2>
+					<p class="mt-1 text-lg">
+						na sraz <span class="whitespace-nowrap">{event.start.d}.–{event.end.d}.&nbsp;{event.start.m}.&nbsp;{event.start.y}</span>,{' '}
+						<span class="whitespace-nowrap">{event.venue.toLowerCase()},</span>{' '}
+						<span class="whitespace-nowrap">{event.town}</span>
+					</p>
 					{event.rsvpDeadline && (
 						<p class="mt-2">
 							Přihlaste se prosím do <strong>{event.rsvpDeadline}</strong>.
@@ -98,7 +97,7 @@ const stamp =
 							</div>
 						</fieldset>
 						<label class:list={[label, 'sm:col-span-2']}>
-							Jméno a příjmení / přezdívka
+							Jméno a příjmení nebo přezdívka
 							<input class={field} type="text" name="name" autocomplete="name" required minlength="2" maxlength="80" placeholder="např. Diego, Diego Nepřišel" />
 						</label>
 						<label class={label}>
@@ -114,7 +113,7 @@ const stamp =
 								autocomplete="tel"
 								inputmode="tel"
 								required
-								pattern="[+0-9 ]{9,20}"
+								pattern="[+0-9 \(\)\-]{9,20}"
 								placeholder="777 123 456"
 								title="Telefonní číslo, např. 777 123 456 nebo +420 777 123 456"
 							/>
@@ -136,12 +135,14 @@ const stamp =
 								Potvrdit účast
 							</button>
 							<p class="mt-3 text-center text-[0.9375rem] text-balance text-ink-soft">
-								Vaše jméno uvidí ostatní přihlášení na prezenční listině, e-mail a telefon jen organizátoři.
+								Vaše jméno uvidí ostatní přihlášení na prezenční listině, <span class="whitespace-nowrap">e-mail</span> a&nbsp;telefon jen
+								organizátoři.
 							</p>
 						</div>
 					</form>
 
-					<div data-rsvp-done hidden class="mt-6">
+					{/* Gets focus after sending, so screen readers read the confirmation. */}
+					<div data-rsvp-done hidden tabindex="-1" class="mt-6 outline-none">
 						<div data-rsvp-done-yes>
 							<p class={stamp}>Zapsáno</p>
 							<p class="mt-4 text-lg">Díky, počítáme s vámi! Uvidíme se ve sklepě.</p>
@@ -181,7 +182,7 @@ const stamp =
 					</div>
 
 					<details data-rsvp-lost class="mt-6">
-						<summary class="cursor-pointer list-none text-center text-trail underline decoration-1 underline-offset-4 transition-colors hover:text-ink [&::-webkit-details-marker]:hidden">
+						<summary class="cursor-pointer list-none text-center text-trail-dark underline decoration-1 underline-offset-4 transition-colors hover:text-ink [&::-webkit-details-marker]:hidden">
 							Změnily se plány? Pošleme vám odkaz
 						</summary>
 						<form data-rsvp-link-form class="mt-3 flex flex-wrap items-end gap-4">
@@ -193,29 +194,14 @@ const stamp =
 								Poslat odkaz
 							</button>
 						</form>
-						<p data-rsvp-link-sent hidden class="mt-3">
+						<p data-rsvp-link-sent hidden class="mt-3" role="status">
 							Pokud e-mail u nás máme, přišly na něj odkazy na prezenční listinu a na změnu odpovědi.
 						</p>
 					</details>
 
-					<p data-rsvp-error hidden class="mt-4 font-semibold text-trail" role="alert" />
+					{/* The script moves it next to whatever failed: the submit button, the link form or the answer panel. */}
+					<p data-rsvp-error hidden class="mt-4 font-semibold text-trail-dark" role="alert" />
 
-					{(event.contactEmail || event.contactPhone) && (
-						<p class="mt-6 border-t border-ink/20 pt-3 text-[0.9375rem] text-ink-soft">
-							Dotazy:{' '}
-							{event.contactEmail && (
-								<a class="underline" href={`mailto:${event.contactEmail}`}>
-									{event.contactEmail}
-								</a>
-							)}
-							{event.contactEmail && event.contactPhone && ', '}
-							{event.contactPhone && (
-								<a class="underline" href={`tel:${event.contactPhone.replace(/\s/g, '')}`}>
-									{event.contactPhone}
-								</a>
-							)}
-						</p>
-					)}
 					{event.paymentInfo && <p class="mt-3 text-[0.9375rem]">{event.paymentInfo}</p>}
 				</div>
 			</Scrap>
@@ -237,7 +223,9 @@ const stamp =
 		const countLine = $('count');
 
 		const show = (el: HTMLElement, on = true) => (el.hidden = !on);
-		const fail = (message: string) => {
+		// The error line goes right under the element the guest just used, where they are looking.
+		const fail = (message: string, near: Element) => {
+			near.after(error);
 			error.textContent = message;
 			show(error);
 		};
@@ -276,10 +264,15 @@ const stamp =
 				show($('done-no'), !coming);
 				show($('mailed'), data.mailed !== false);
 				show($('unmailed'), data.mailed === false);
-				show($('done'));
+				const done = $('done');
+				show(done);
 				setCount(data.count);
+				// The form was much taller than the confirmation, so without this the page would be left showing
+				// whatever comes after the slip. Focus lets screen readers read the confirmation.
+				root.scrollIntoView({ block: 'start' });
+				done.focus({ preventScroll: true });
 			} catch (err) {
-				fail(message(err));
+				fail(message(err), button);
 				button.disabled = false;
 			}
 		});
@@ -305,7 +298,7 @@ const stamp =
 				show(linkForm, false);
 				show($('link-sent'));
 			} catch (err) {
-				fail(message(err));
+				fail(message(err), linkForm);
 				button.disabled = false;
 			}
 		});
@@ -323,7 +316,7 @@ const stamp =
 			root.scrollIntoView();
 			call('/attendees', { token: sheetToken })
 				.then((data: { people: Person[] }) => renderSheet(data.people))
-				.catch((err) => fail(message(err)));
+				.catch((err) => fail(message(err), $('answer')));
 		}
 
 		function renderSheet(people: Person[]) {
@@ -373,7 +366,7 @@ const stamp =
 					showAnswer(data.coming);
 					show($('answer'));
 				})
-				.catch((err) => fail(message(err)));
+				.catch((err) => fail(message(err), $('answer')));
 
 			choices.forEach((choice) =>
 				choice.addEventListener('click', async () => {
@@ -390,9 +383,11 @@ const stamp =
 						show($('answer-saved'));
 						setCount(data.count);
 					} catch (err) {
-						fail(message(err));
+						fail(message(err), choice.parentElement!);
 					}
 					choices.forEach((b) => (b.disabled = false));
+					// Disabling the clicked button took the focus away; give it back.
+					choice.focus({ preventScroll: true });
 				}),
 			);
 		}

@@ -29,9 +29,10 @@ export const event = {
 	// RSVP API served by the same Cloudflare Worker as the site (worker/src/index.ts).
 	// In `npm run dev` it is proxied to `npx wrangler dev` (astro.config.mjs). Empty hides the RSVP slip.
 	rsvpApi: '/api',
-	// Optional extras shown on the RSVP slip.
-	contactEmail: '',
+	// Contact for questions, shown in the footer (Cloudflare Email Routing forwards sraz@gis20.cz to the organisers).
+	contactEmail: 'sraz@gis20.cz',
 	contactPhone: '',
+	// Optional extras shown on the RSVP slip.
 	rsvpDeadline: '', // free text, e.g. '31. 3. 2027'
 	paymentInfo: '', // free text, e.g. account number + variable symbol
 };

@@ -1,6 +1,8 @@
 ---
 import '@fontsource-variable/caveat';
 import '@fontsource-variable/newsreader';
+// The real italic; without it browsers only slant the upright letters (the lead, footers and captions are italic).
+import '@fontsource-variable/newsreader/wght-italic.css';
 import '@fontsource-variable/oswald';
 import '../styles/global.css';
 // Preload the Latin subsets (Czech needs latin-ext too) so text renders in its own font right away
@@ -9,10 +11,21 @@ import caveatLatin from '@fontsource-variable/caveat/files/caveat-latin-wght-nor
 import caveatLatinExt from '@fontsource-variable/caveat/files/caveat-latin-ext-wght-normal.woff2?url';
 import newsreaderLatin from '@fontsource-variable/newsreader/files/newsreader-latin-wght-normal.woff2?url';
 import newsreaderLatinExt from '@fontsource-variable/newsreader/files/newsreader-latin-ext-wght-normal.woff2?url';
+import newsreaderItalicLatin from '@fontsource-variable/newsreader/files/newsreader-latin-wght-italic.woff2?url';
+import newsreaderItalicLatinExt from '@fontsource-variable/newsreader/files/newsreader-latin-ext-wght-italic.woff2?url';
 import oswaldLatin from '@fontsource-variable/oswald/files/oswald-latin-wght-normal.woff2?url';
 import oswaldLatinExt from '@fontsource-variable/oswald/files/oswald-latin-ext-wght-normal.woff2?url';
 
-const fonts = [newsreaderLatin, newsreaderLatinExt, oswaldLatin, oswaldLatinExt, caveatLatin, caveatLatinExt];
+const fonts = [
+	newsreaderLatin,
+	newsreaderLatinExt,
+	newsreaderItalicLatin,
+	newsreaderItalicLatinExt,
+	oswaldLatin,
+	oswaldLatinExt,
+	caveatLatin,
+	caveatLatinExt,
+];
 
 interface Props {
 	title: string;

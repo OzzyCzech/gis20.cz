@@ -20,7 +20,7 @@ Guests answer coming or not coming; the answer, name, e-mail, phone and an optio
 confirmation e-mail (Resend) brings two personal links: the attendance sheet and a link to change the answer
 either way. Anyone who lost them can request the answer link again on the slip.
 Publicly the page only shows the head count. Without `rsvpApi` the slip renders only in dev.
-`rsvpDeadline`, `contactEmail`, `contactPhone` and `paymentInfo` are shown on the slip when filled.
+`rsvpDeadline` and `paymentInfo` are shown on the slip when filled; `contactEmail` and `contactPhone` in the footer.
 
 Coordinates in `venueCoords` are the wine cellar itself; they drive the map pin, the map links and the distance.
 
