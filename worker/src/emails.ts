@@ -6,7 +6,7 @@
 import { type Block, facts, links, note, p, signature } from './mail.ts';
 
 export type Status = 'yes' | 'no';
-/** Accommodation: the organisers book it, or the guest sorts it out; null when the guest hasn't said. */
+/** Accommodation: the organisers book it, or the guest doesn't need it from us ("Ne, díky"); null when the guest hasn't said. */
 export type Lodging = 'arrange' | 'self';
 export type Mail = { subject: string; blocks: Block[] };
 /** What an e-mail needs to know about the guest: the name, the answer and both personal tokens. */
@@ -20,7 +20,7 @@ const EVENT = {
 };
 const LODGING: Record<Lodging | 'unknown', string> = {
 	arrange: 'zařídíme ti ho, ozveme se',
-	self: 'zařídíš si ho',
+	self: 'nezařizujeme',
 	// Someone who first declined and then switched to coming through the answer link never chose.
 	unknown: 'odpověz nám na tenhle e-mail, jestli ti ho máme zařídit',
 };
@@ -52,7 +52,7 @@ export function answerMail(siteUrl: string, guest: Guest): Mail {
 				facts([
 					{ label: 'Kdy', value: EVENT.when, action: { label: 'Uložit do kalendáře', href: new URL('sraz.ics', siteUrl).href } },
 					{ label: 'Kde', value: EVENT.place, action: { label: 'Ukázat na mapě', href: EVENT.map } },
-					{ label: 'Nocleh', value: LODGING[guest.lodging ?? 'unknown'] },
+					{ label: 'Ubytování', value: LODGING[guest.lodging ?? 'unknown'] },
 				]),
 				...personalLinks(
 					siteUrl,
