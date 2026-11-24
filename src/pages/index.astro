@@ -226,17 +226,8 @@ const footerLink = 'font-semibold underline decoration-1 underline-offset-4 tran
 	</main>
 
 	<!-- The footer is the title block from the corner of a map sheet, pinned to the board like the other scraps
-	     (a double neatline and labelled fields: sheet, questions, legend), with the approval stamp on the map itself. -->
+	     (a double neatline and labelled fields: sheet, questions, legend), with the approval stamp next to it on the map. -->
 	<footer class="mx-auto flex max-w-[69rem] flex-col gap-10 overflow-x-clip px-4 pb-14 sm:px-6 xl:flex-row xl:items-center">
-		<!-- Approval stamp, as in the corner of a map sheet; the darker red keeps it readable over the contours. -->
-		<div class="-rotate-6 self-start pl-2 xl:self-center">
-			<p
-				class="border-[3px] border-trail-dark/90 px-5 py-2.5 font-cond text-lg leading-snug font-semibold tracking-wide whitespace-nowrap text-trail-dark uppercase"
-			>
-				Mapové podklady<br />schválil Ozzy
-			</p>
-		</div>
-
 		<Scrap
 			seed={40}
 			rotate={-0.4}
@@ -334,5 +325,14 @@ const footerLink = 'font-semibold underline decoration-1 underline-offset-4 tran
 				</div>
 			</div>
 		</Scrap>
+
+		<!-- Approval stamp, as in the corner of a map sheet; the darker red keeps it readable over the contours. -->
+		<div class="-rotate-6 self-start pl-2 xl:self-center">
+			<p
+				class="border-[3px] border-trail-dark/90 px-5 py-2.5 font-cond text-lg leading-snug font-semibold tracking-wide whitespace-nowrap text-trail-dark uppercase"
+			>
+				Mapové podklady<br />schválil Ozzy
+			</p>
+		</div>
 	</footer>
 </Base>
