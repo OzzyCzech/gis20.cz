@@ -121,18 +121,18 @@ const stamp =
 						{/* Only for guests who come; the script hides and disables it for "Nepřijedu". It sits after the contact
 						    fields, with the note: both are practical details, and the two choice groups don't pile up at the top. */}
 						<fieldset data-rsvp-lodging class="sm:col-span-2" aria-describedby="rsvp-lodging-hint">
-							<legend class={label}>Nocleh</legend>
+							<legend class={label}>Ubytování</legend>
 							<p id="rsvp-lodging-hint" class="text-[0.9375rem] text-ink-soft">
-								Rádi ho zařídíme v&nbsp;okolí, určitě lepší než na kolejích.
+								Rádi ho zařídíme v&nbsp;okolí (když nás bude víc).
 							</p>
 							<div class="mt-1.5 grid grid-cols-[repeat(auto-fit,minmax(9rem,1fr))] gap-3">
 								<label class={choice}>
 									<input type="radio" name="lodging" value="arrange" required class="size-4 accent-trail" />
-									Zařiďte mi ho
+									Ano, zařiďte mi ho
 								</label>
 								<label class={choice}>
 									<input type="radio" name="lodging" value="self" class="size-4 accent-trail" />
-									Zařídím si ho
+									Ne, díky
 								</label>
 							</div>
 						</fieldset>
