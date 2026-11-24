@@ -96,23 +96,6 @@ const stamp =
 								</label>
 							</div>
 						</fieldset>
-						{/* Only for guests who come; the script hides and disables it for "Nepřijedu". */}
-						<fieldset data-rsvp-lodging class="sm:col-span-2" aria-describedby="rsvp-lodging-hint">
-							<legend class={label}>Nocleh</legend>
-							<p id="rsvp-lodging-hint" class="text-[0.9375rem] text-ink-soft">
-								Rádi ho zařídíme v&nbsp;okolí, určitě lepší než na kolejích. Jen potřebujeme vědět, pro kolik lidí.
-							</p>
-							<div class="mt-1.5 grid grid-cols-[repeat(auto-fit,minmax(9rem,1fr))] gap-3">
-								<label class={choice}>
-									<input type="radio" name="lodging" value="arrange" required class="size-4 accent-trail" />
-									Zařiďte mi ho
-								</label>
-								<label class={choice}>
-									<input type="radio" name="lodging" value="self" class="size-4 accent-trail" />
-									Zařídím si ho
-								</label>
-							</div>
-						</fieldset>
 						<label class:list={[label, 'sm:col-span-2']}>
 							Jméno a příjmení nebo přezdívka
 							<input class={field} type="text" name="name" autocomplete="name" required minlength="2" maxlength="80" placeholder="např. Diego, Diego Nepřišel" />
@@ -135,6 +118,24 @@ const stamp =
 								title="Telefonní číslo, např. 777 123 456 nebo +420 777 123 456"
 							/>
 						</label>
+						{/* Only for guests who come; the script hides and disables it for "Nepřijedu". It sits after the contact
+						    fields, with the note: both are practical details, and the two choice groups don't pile up at the top. */}
+						<fieldset data-rsvp-lodging class="sm:col-span-2" aria-describedby="rsvp-lodging-hint">
+							<legend class={label}>Nocleh</legend>
+							<p id="rsvp-lodging-hint" class="text-[0.9375rem] text-ink-soft">
+								Rádi ho zařídíme v&nbsp;okolí, určitě lepší než na kolejích.
+							</p>
+							<div class="mt-1.5 grid grid-cols-[repeat(auto-fit,minmax(9rem,1fr))] gap-3">
+								<label class={choice}>
+									<input type="radio" name="lodging" value="arrange" required class="size-4 accent-trail" />
+									Zařiďte mi ho
+								</label>
+								<label class={choice}>
+									<input type="radio" name="lodging" value="self" class="size-4 accent-trail" />
+									Zařídím si ho
+								</label>
+							</div>
+						</fieldset>
 						<div class="sm:col-span-2">
 							<label for="rsvp-note" class={label}>
 								Poznámka <span class="font-normal text-ink-soft">(nepovinné)</span>
