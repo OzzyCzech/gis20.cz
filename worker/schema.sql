@@ -6,6 +6,9 @@ CREATE TABLE IF NOT EXISTS registrations (
 	name TEXT NOT NULL,
 	phone TEXT NOT NULL DEFAULT '',
 	note TEXT NOT NULL DEFAULT '',
+	-- Accommodation, chosen by guests who come: 'arrange' = the organisers book it, 'self' = the guest sorts it out.
+	-- NULL when unknown (not coming, or switched to coming through the answer link).
+	lodging TEXT CHECK (lodging IN ('arrange', 'self')),
 	status TEXT NOT NULL CHECK (status IN ('yes', 'no')),
 	-- Personal link to change the answer (coming / not coming), sent in every confirmation e-mail.
 	token TEXT NOT NULL UNIQUE,

@@ -96,6 +96,23 @@ const stamp =
 								</label>
 							</div>
 						</fieldset>
+						{/* Only for guests who come; the script hides and disables it for "Nepřijedu". */}
+						<fieldset data-rsvp-lodging class="sm:col-span-2" aria-describedby="rsvp-lodging-hint">
+							<legend class={label}>Nocleh</legend>
+							<p id="rsvp-lodging-hint" class="text-[0.9375rem] text-ink-soft">
+								Rádi ho zařídíme v&nbsp;okolí, určitě lepší než na kolejích. Jen potřebujeme vědět, pro kolik lidí.
+							</p>
+							<div class="mt-1.5 grid grid-cols-[repeat(auto-fit,minmax(9rem,1fr))] gap-3">
+								<label class={choice}>
+									<input type="radio" name="lodging" value="arrange" required class="size-4 accent-trail" />
+									Zařiďte mi ho
+								</label>
+								<label class={choice}>
+									<input type="radio" name="lodging" value="self" class="size-4 accent-trail" />
+									Zařídím si ho
+								</label>
+							</div>
+						</fieldset>
 						<label class:list={[label, 'sm:col-span-2']}>
 							Jméno a příjmení nebo přezdívka
 							<input class={field} type="text" name="name" autocomplete="name" required minlength="2" maxlength="80" placeholder="např. Diego, Diego Nepřišel" />
@@ -122,7 +139,7 @@ const stamp =
 							<label for="rsvp-note" class={label}>
 								Poznámka <span class="font-normal text-ink-soft">(nepovinné)</span>
 							</label>
-							<p id="rsvp-note-hint" class="text-[0.9375rem] text-ink-soft">Strava, nocleh, spolujízda nebo cokoliv dalšího, co nám chcete napsat.</p>
+							<p id="rsvp-note-hint" class="text-[0.9375rem] text-ink-soft">Strava, spolujízda nebo cokoliv dalšího, co nám chcete napsat.</p>
 							<textarea id="rsvp-note" class:list={[field, 'resize-y']} name="note" rows="3" maxlength="500" aria-describedby="rsvp-note-hint" placeholder="např. jsem ortodoxní vegan, nejím nic, co vrhá stín" />
 						</div>
 						{/* Honeypot for bots, hidden from people and screen readers. */}
@@ -277,11 +294,15 @@ const stamp =
 			}
 		});
 
-		// The submit button follows the answer.
+		// The submit button follows the answer, and only guests who come choose accommodation
+		// (a disabled fieldset is neither validated nor sent).
 		const submit = form.querySelector<HTMLButtonElement>('button[type=submit]')!;
+		const lodging = $<HTMLFieldSetElement>('lodging');
 		const syncAnswer = () => {
 			const coming = (form.elements.namedItem('attending') as RadioNodeList).value !== 'no';
 			submit.textContent = coming ? 'Potvrdit účast' : 'Odeslat omluvenku';
+			lodging.hidden = !coming;
+			lodging.disabled = !coming;
 		};
 		form.addEventListener('change', syncAnswer);
 		syncAnswer();

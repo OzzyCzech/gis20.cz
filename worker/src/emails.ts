@@ -6,15 +6,23 @@
 import { type Block, facts, links, note, p, signature } from './mail.ts';
 
 export type Status = 'yes' | 'no';
+/** Accommodation: the organisers book it, or the guest sorts it out; null when the guest hasn't said. */
+export type Lodging = 'arrange' | 'self';
 export type Mail = { subject: string; blocks: Block[] };
 /** What an e-mail needs to know about the guest: the name, the answer and both personal tokens. */
-export type Guest = { name: string; status: Status; token: string; view_token: string };
+export type Guest = { name: string; status: Status; token: string; view_token: string; lodging?: Lodging | null };
 
 const EVENT = {
 	when: '19.–20. června 2027',
 	place: 'vinný sklep, Dolní Bojanovice',
 	// Same map link as on the site (mapLinks in src/data/event.ts).
 	map: 'https://mapy.com/fnc/v1/showmap?mapset=outdoor&center=17.0220803,48.8625189&zoom=17&marker=true',
+};
+const LODGING: Record<Lodging | 'unknown', string> = {
+	arrange: 'zařídíme ti ho, ozveme se',
+	self: 'zařídíš si ho',
+	// Someone who first declined and then switched to coming through the answer link never chose.
+	unknown: 'odpověz nám na tenhle e-mail, jestli ti ho máme zařídit',
 };
 const SIGNATURE = 'Igor, Zip, Maja, Vojta, Mini, Ozzy, Lenka a všichni ostatní';
 
@@ -44,6 +52,7 @@ export function answerMail(siteUrl: string, guest: Guest): Mail {
 				facts([
 					{ label: 'Kdy', value: EVENT.when, action: { label: 'Uložit do kalendáře', href: new URL('sraz.ics', siteUrl).href } },
 					{ label: 'Kde', value: EVENT.place, action: { label: 'Ukázat na mapě', href: EVENT.map } },
+					{ label: 'Nocleh', value: LODGING[guest.lodging ?? 'unknown'] },
 				]),
 				...personalLinks(
 					siteUrl,

@@ -4,7 +4,7 @@
 // Publicly the API only returns a count. Names are listed only for a registrant's personal sheet link,
 // and e-mail addresses, phones and notes never leave the database.
 
-import { answerMail, type Guest, linksMail, type Mail, type Status } from './emails.ts';
+import { answerMail, type Guest, type Lodging, linksMail, type Mail, type Status } from './emails.ts';
 import { renderHtml, renderText } from './mail.ts';
 
 interface D1Result<T> {
@@ -38,7 +38,16 @@ interface Env {
 	ALLOWED_ORIGINS: string;
 }
 
-type Registration = { id: number; email: string; name: string; status: Status; token: string; view_token: string | null };
+type Registration = {
+	id: number;
+	email: string;
+	name: string;
+	status: Status;
+	token: string;
+	view_token: string | null;
+	lodging: Lodging | null;
+};
+const COLUMNS = 'id, email, name, status, token, view_token, lodging';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const PHONE_RE = /^\+?\d{9,15}$/;
@@ -135,7 +144,7 @@ async function count(env: Env): Promise<number> {
 }
 
 async function findByEmail(env: Env, email: string) {
-	return env.DB.prepare('SELECT id, email, name, status, token, view_token FROM registrations WHERE email = ?').bind(email).first<Registration>();
+	return env.DB.prepare(`SELECT ${COLUMNS} FROM registrations WHERE email = ?`).bind(email).first<Registration>();
 }
 
 async function register(env: Env, data: Record<string, unknown>): Promise<[unknown, number]> {
@@ -147,6 +156,8 @@ async function register(env: Env, data: Record<string, unknown>): Promise<[unkno
 	const email = text(data.email, 254).toLowerCase();
 	const phone = text(data.phone, 24);
 	const note = text(data.note, 500);
+	// Only guests who come choose accommodation; anything else is stored as unknown.
+	const lodging: Lodging | null = status === 'yes' && (data.lodging === 'arrange' || data.lodging === 'self') ? data.lodging : null;
 	if (name.length < 2) return [{ error: 'Vyplňte prosím jméno.' }, 400];
 	// The name ends up in e-mails and on the attendance sheet; keep links and markup out of it.
 	if (/https?:|www\.|[<>/@]/i.test(name)) return [{ error: 'Jméno obsahuje nepovolené znaky.' }, 400];
@@ -160,22 +171,22 @@ async function register(env: Env, data: Record<string, unknown>): Promise<[unkno
 		token = existing.token;
 		viewToken = existing.view_token ?? newToken();
 		await env.DB.prepare(
-			'UPDATE registrations SET name = ?, phone = ?, note = ?, status = ?, view_token = ?, updated_at = ?, cancelled_at = NULL WHERE id = ?',
+			'UPDATE registrations SET name = ?, phone = ?, note = ?, status = ?, lodging = ?, view_token = ?, updated_at = ?, cancelled_at = NULL WHERE id = ?',
 		)
-			.bind(name, phone, note, status, viewToken, now(), existing.id)
+			.bind(name, phone, note, status, lodging, viewToken, now(), existing.id)
 			.run();
 	} else {
 		token = newToken();
 		viewToken = newToken();
 		const at = now();
 		await env.DB.prepare(
-			'INSERT INTO registrations (email, name, phone, note, status, token, view_token, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+			'INSERT INTO registrations (email, name, phone, note, status, lodging, token, view_token, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
 		)
-			.bind(email, name, phone, note, status, token, viewToken, at, at)
+			.bind(email, name, phone, note, status, lodging, token, viewToken, at, at)
 			.run();
 	}
 
-	const mailed = await sendAnswerMail(env, { email, name, status, token, view_token: viewToken });
+	const mailed = await sendAnswerMail(env, { email, name, status, lodging, token, view_token: viewToken });
 	return [{ ok: true, mailed, status, count: await count(env) }, 200];
 }
 
@@ -184,7 +195,7 @@ async function register(env: Env, data: Record<string, unknown>): Promise<[unkno
 async function answer(env: Env, data: Record<string, unknown>): Promise<[unknown, number]> {
 	const token = text(data.token, 64);
 	const row = token
-		? await env.DB.prepare('SELECT id, email, name, status, token, view_token FROM registrations WHERE token = ?').bind(token).first<Registration>()
+		? await env.DB.prepare(`SELECT ${COLUMNS} FROM registrations WHERE token = ?`).bind(token).first<Registration>()
 		: null;
 	if (!row) return [{ error: 'Odkaz na změnu odpovědi není platný.' }, 404];
 

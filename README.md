@@ -17,7 +17,8 @@ Built with Astro and Tailwind CSS v4.
 
 All event facts live in `src/data/event.ts`. Optional fields are hidden on the page until filled in.
 The RSVP slip (`src/components/RsvpSlip.astro`) talks to the Cloudflare Worker in `worker/` (URL in `rsvpApi`).
-Guests answer coming or not coming; the answer, name, e-mail, phone and an optional note go to D1 and a
+Guests answer coming or not coming; the answer, name, e-mail, phone, accommodation (organisers book it or the guest
+sorts it out, asked only of guests who come) and an optional note go to D1 and a
 confirmation e-mail (Resend) brings two personal links: the attendance sheet and a link to change the answer
 either way. Anyone who lost them can request the answer link again on the slip.
 Publicly the page only shows the head count. Without `rsvpApi` the slip renders only in dev.
@@ -56,7 +57,9 @@ npx wrangler d1 execute gis20-rsvp --local --file worker/schema.sql    # local d
 npx wrangler secret put RESEND_API_KEY                # Resend API key for e-mails
 npx wrangler d1 execute gis20-rsvp --remote --file worker/schema.sql   # create the table (once)
 npx wrangler d1 execute gis20-rsvp --remote --file worker/migrations/0001_view_token.sql  # only for a database created before it
-npx wrangler d1 execute gis20-rsvp --remote --command "SELECT name, email, phone, note, status, updated_at FROM registrations ORDER BY created_at"
+npx wrangler d1 execute gis20-rsvp --remote --file worker/migrations/0002_lodging.sql     # only for a database created before it
+npx wrangler d1 execute gis20-rsvp --remote --command "SELECT name, email, phone, note, status, lodging, updated_at FROM registrations ORDER BY created_at"
+npx wrangler d1 execute gis20-rsvp --remote --command "SELECT lodging, COUNT(*) FROM registrations WHERE status = 'yes' GROUP BY lodging"  # beds to book
 ```
 
 Guests answer "Přijedu" or "Nepřijedu". The confirmation e-mail has a personal link to the attendance sheet

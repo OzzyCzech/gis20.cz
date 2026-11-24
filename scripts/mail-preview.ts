@@ -15,6 +15,7 @@ const guest: Guest = {
 	status: 'yes',
 	token: '0123456789abcdef0123456789abcdef',
 	view_token: 'fedcba9876543210fedcba9876543210',
+	lodging: 'arrange',
 };
 
 const mails: [string, Mail][] = [
