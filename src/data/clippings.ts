@@ -153,7 +153,7 @@ export const clippings: Clipping[] = [
 		kicker: 'Společenská rubrika',
 		headline: 'Sínus, kosínus, deskriptíva…',
 		date: '9. 7. 2007',
-		body: 'Před dvaceti léty nám barva na diplomech ještě ani pořádně nezaschla. Mladí, perspektivní, šli jsme dál! Sínus i kosínus jsme mezitím zapomněli, ale cestu do sklepa najdeme. Dobří holubi se vracejí.',
+		body: 'Před dvaceti lety nám barva na diplomech ještě ani pořádně nezaschla. Mladí, perspektivní, šli jsme dál! Sínus i kosínus jsme mezitím zapomněli, ale cestu do sklepa najdeme. Dobří holubi se vracejí.',
 		footer: 'Na památku… Protože za pár let tomu nikdo nebude věřit.',
 		image: {
 			file: 'promoce-2007.jpg',
