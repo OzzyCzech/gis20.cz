@@ -35,7 +35,7 @@ The whole page is a noticeboard: paper scraps lying on a fictional topographic m
 - `src/pages/index.astro` – the page: newspaper front page, tear-off calendar, sticky note, receipt, route map, archive
 - `src/components/Scrap.astro` + `src/lib/scrap.ts` – paper scrap wrapper (tilt, torn/cut/zigzag edges, pin or tape)
 - `src/components/Clipping.astro`, `ClippingArt.astro` + `src/data/clippings.ts` – fake newspaper clippings in the archive
-- `src/assets/clippings/` – optional photos for clippings (referenced by `image.file` in `clippings.ts`)
+- `src/assets/clippings/` – optional photos for clippings (referenced by `image.file` in `clippings.ts`; `image.full` is a colour original that opens on click)
 - `src/pages/map.svg.ts` + `src/lib/contours.ts` – seamless map tile for the background (marching squares isolines)
 - `src/components/RouteMap.astro` – route map VŠB-TUO → Dolní Bojanovice with graticule and scale bar
 - `src/components/Countdown.astro` – days-left counter, computed in the browser

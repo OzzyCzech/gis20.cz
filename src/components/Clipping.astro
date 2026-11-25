@@ -1,6 +1,6 @@
 ---
 import type { ImageMetadata } from 'astro';
-import { Image } from 'astro:assets';
+import { getImage, Image } from 'astro:assets';
 import type { Clipping } from '../data/clippings';
 import { rng } from '../lib/scrap';
 import { nbsp } from '../lib/text';
@@ -27,7 +27,7 @@ const rand = rng(seed * 31 + 5);
 const shiftX = Math.round(-14 + rand() * 28);
 const shiftY = Math.round(-10 + rand() * 28);
 const widths = ['sm:w-80', 'sm:w-72', 'sm:w-[21rem]', 'sm:w-64'];
-const width = c.image ? 'sm:w-[22rem]' : c.kind === 'classified' ? 'sm:w-60' : widths[seed % widths.length];
+const width = c.image?.wide ? 'sm:w-[38rem]' : c.image ? 'sm:w-[22rem]' : c.kind === 'classified' ? 'sm:w-60' : widths[seed % widths.length];
 const paper = c.kind === 'ad' ? '#f6efdc' : c.kind === 'classified' ? '#ede3c8' : undefined;
 // Ruler under a photo: 20 ticks per unit, labelled 0, ½ and 1 <unit>.
 const scale = c.image?.scale;
@@ -44,7 +44,13 @@ const attach = seed % 3 === 0 ? 'tape' : seed % 3 === 1 ? 'pin' : 'none';
 
 // Optional photo; a missing file simply leaves the clipping without it.
 const photos = import.meta.glob<{ default: ImageMetadata }>('../assets/clippings/*.{png,jpg,jpeg,webp}', { eager: true });
-const photo = c.image && Object.entries(photos).find(([path]) => path.endsWith(`/${c.image!.file}`))?.[1].default;
+const findPhoto = (file: string) => Object.entries(photos).find(([path]) => path.endsWith(`/${file}`))?.[1].default;
+const photo = c.image && findPhoto(c.image.file);
+// The colour original opens on click: in a lightbox, or as a plain link without JS.
+const fullPhoto = c.image?.full ? findPhoto(c.image.full) : undefined;
+const full = photo && fullPhoto ? await getImage({ src: fullPhoto, width: Math.min(fullPhoto.width, 2400), format: 'jpg' }) : undefined;
+const lightboxId = `lightbox-${seed}`;
+const PhotoLink = full ? 'a' : 'div';
 ---
 
 <Scrap
@@ -52,7 +58,7 @@ const photo = c.image && Object.entries(photos).find(([path]) => path.endsWith(`
 	paper={paper}
 	attach={attach}
 	lift
-	class:list={['nudge w-full max-w-[22rem] shrink-0', width]}
+	class:list={['nudge w-full shrink-0', c.image?.wide ? 'max-w-[38rem]' : 'max-w-[22rem]', width]}
 	style={`--x:${shiftX}px;--y:${shiftY}px`}
 	innerClass="px-5 pt-6 pb-7 sm:px-6"
 >
@@ -100,12 +106,20 @@ const photo = c.image && Object.entries(photos).find(([path]) => path.endsWith(`
 				)}
 				{photo && c.image && (
 					<figure class="mx-auto mt-3" style={`width:${c.image.width ?? 100}%`}>
-						<Image
-							src={photo}
-							alt={c.image.alt}
-							width={640}
-							class="h-auto w-full contrast-125 grayscale mix-blend-multiply"
-						/>
+						<PhotoLink
+							href={full?.src}
+							data-lightbox={full && lightboxId}
+							aria-label={full && 'Otevřít barevný originál fotky'}
+							class:list={[full && 'block cursor-zoom-in']}
+						>
+							<Image
+								src={photo}
+								alt={c.image.alt}
+								width={c.image.wide ? 760 : 640}
+								densities={c.image.wide ? [1, 2] : undefined}
+								class="h-auto w-full contrast-125 grayscale mix-blend-multiply"
+							/>
+						</PhotoLink>
 						{ruler && (
 							<svg viewBox="0 0 200 18" class="mt-1 h-auto w-full text-ink" aria-hidden="true">
 								<rect x="0.6" y="0.6" width="198.8" height="16.8" fill="#f4ecd8" stroke="currentColor" stroke-width="1.2" />
@@ -146,7 +160,49 @@ const photo = c.image && Object.entries(photos).find(([path]) => path.endsWith(`
 	}
 </Scrap>
 
+{
+	full && c.image && (
+		<dialog id={lightboxId} class="lightbox m-auto max-h-none max-w-none overflow-visible bg-transparent p-0" aria-label={c.image.alt}>
+			<div class="relative bg-receipt p-2 shadow-[0_12px_40px_rgba(0,0,0,0.5)] sm:p-3">
+				<img
+					src={full.src}
+					{...full.attributes}
+					alt={c.image.alt}
+					loading="lazy"
+					decoding="async"
+					class="block h-auto max-h-[calc(100dvh-4rem)] w-auto max-w-[calc(100vw-3rem)]"
+				/>
+				<form method="dialog">
+					<button
+						class="absolute -top-3 -right-3 grid size-9 cursor-pointer place-items-center rounded-full bg-ink text-2xl leading-none text-receipt shadow-md"
+						aria-label="Zavřít"
+					>
+						×
+					</button>
+				</form>
+			</div>
+		</dialog>
+	)
+}
+
+<script>
+	// Open the colour original in the dialog; a click anywhere or Esc closes it.
+	for (const link of document.querySelectorAll<HTMLAnchorElement>('a[data-lightbox]')) {
+		const dialog = document.getElementById(link.dataset.lightbox!);
+		if (!(dialog instanceof HTMLDialogElement)) continue;
+		link.addEventListener('click', (e) => {
+			e.preventDefault();
+			dialog.showModal();
+		});
+		dialog.addEventListener('click', () => dialog.close());
+	}
+</script>
+
 <style>
+	.lightbox::backdrop {
+		background: rgb(30 26 22 / 0.85);
+	}
+
 	@media (min-width: 640px) {
 		:global(.nudge) {
 			translate: var(--x) var(--y);

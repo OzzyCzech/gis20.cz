@@ -24,8 +24,18 @@ export type Clipping = {
 	 * Photo from src/assets/clippings/; skipped if the file is missing.
 	 * `width` is % of the clipping width (default 100).
 	 * `scale` draws a ruler under it: from/to are % of the photo width for 0 and 1 unit.
+	 * `wide` makes the whole clipping wider (a group photo needs the room).
+	 * `full` is a colour photo from the same folder that opens on click, without the newsprint look.
 	 */
-	image?: { file: string; alt: string; caption?: string; width?: number; scale?: { from: number; to: number; unit: string } };
+	image?: {
+		file: string;
+		alt: string;
+		caption?: string;
+		width?: number;
+		scale?: { from: number; to: number; unit: string };
+		wide?: boolean;
+		full?: string;
+	};
 };
 
 export const clippings: Clipping[] = [
@@ -88,7 +98,7 @@ export const clippings: Clipping[] = [
 		kicker: 'Software',
 		headline: 'ArcView opět nereaguje',
 		body: 'Neuložený projekt je nenávratně ztracen. Vyučující David V. doporučuje vytvořit si kompulzivní návyk mačkat Ctrl+S každých 10 sekund.',
-		footer: 'Já si to neuložil!',
+		footer: 'Davide, já si to neuložil!',
 	},
 	{
 		kind: 'news',
@@ -137,5 +147,19 @@ export const clippings: Clipping[] = [
 		headline: 'Nechal otevřeno',
 		body: 'Student oslavil Den dětí otevřenými dveřmi učebny J339. Neznámý pachatel příležitosti využil a odnesl si na oslavu projektor za 60 tisíc korun.',
 		footer: 'Hej, tak to jsem v prdeli.',
+	},
+	{
+		kind: 'news',
+		kicker: 'Společenská rubrika',
+		headline: 'Sínus, kosínus, deskriptíva…',
+		date: '9. 7. 2007',
+		body: 'Před dvaceti léty nám barva na diplomech ještě ani pořádně nezaschla. Mladí, perspektivní, šli jsme dál! Sínus i kosínus jsme mezitím zapomněli, ale cestu do sklepa najdeme. Dobří holubi se vracejí.',
+		footer: 'Na památku… Protože za pár let tomu nikdo nebude věřit.',
+		image: {
+			file: 'promoce-2007.jpg',
+			alt: 'Skupinové foto z promocí: osmnáct absolventů v talárech a čepicích, jedenáct stojí vzadu, sedm klečí vpředu s deskami diplomů',
+			wide: true,
+			full: 'promoce-2007-original.jpg',
+		},
 	},
 ];
