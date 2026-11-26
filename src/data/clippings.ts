@@ -45,11 +45,6 @@ export const clippings: Clipping[] = [
 		headline: 'Studenti založili punkovou skupinu Karpální tunely',
 		body: 'Na prvním koncertu ve Vrtačce zazněly pecky jako Topologická chyba, Křovákova deformace, Souřadnice vzpoury, Šikmá konformita, Ortogonální odpor nebo Geodetická anarchie.',
 		footer: 'Bratři v Kliku.',
-		image: {
-			file: 'bratri-v-kliku.png',
-			alt: 'Potisk trička: tři kreslení kluci v objetí, na tričkách nápis GIS, pod nimi Bratři v Kliku',
-			caption: 'Kapela vystupuje výhradně v tričkách Bratři v Kliku.',
-		},
 	},
 	{
 		kind: 'classified',
